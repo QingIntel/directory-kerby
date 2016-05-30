@@ -100,6 +100,7 @@ public class AsRequest extends KdcRequest {
 
         byte[] decryptedData = decryptWithClientKey(getKdcRep().getEncryptedEncPart(),
                 KeyUsage.AS_REP_ENCPART);
+
         if ((decryptedData[0] & 0x1f) == 26) {
             decryptedData[0] = (byte) (decryptedData[0] - 1);
         }
@@ -140,9 +141,12 @@ public class AsRequest extends KdcRequest {
     }
 
     public TgtTicket getTicket() {
+        /*
         TgtTicket tgtTicket = new TgtTicket(getKdcRep().getTicket(),
                 (EncAsRepPart) getKdcRep().getEncPart(), getKdcRep().getCname());
-        return tgtTicket;
+                return tgtTicket;
+                */
+        return null;
     }
 
     private PrincipalName makeTgsPrincipal() {

@@ -19,14 +19,12 @@
  */
 package org.apache.kerby.kerberos.kerb.crypto.util;
 
-import java.security.SecureRandom;
-
 public class Nonce {
 
-    private static SecureRandom srand = new SecureRandom();
+    //private static SecureRandom srand = new SecureRandom();
 
     public static synchronized int value() {
-        int value = srand.nextInt();
+        int value = 0;
         return value & 0x7fffffff;
     }
 }

@@ -58,8 +58,8 @@ public class NettyKdcNetwork {
         this.kdcContext = kdcContext;
         // Configure the server.
         bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
-        executorGroup = new DefaultEventExecutorGroup(10); //TODO: to configure.
+        workerGroup = new NioEventLoopGroup(10);
+        executorGroup = new DefaultEventExecutorGroup(10); //TODO: to configure. tcp
     }
 
     public void listen(InetSocketAddress tcpAddress,
@@ -76,6 +76,8 @@ public class NettyKdcNetwork {
         }
     }
 
+    //new LoggingHandler(LogLevel.INFO)
+
     private void doStart() throws Exception {
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
@@ -91,8 +93,9 @@ public class NettyKdcNetwork {
         }
     }
 
+    //here
     private void startUDPServer() {
-        this.group = new NioEventLoopGroup();
+        this.group = new NioEventLoopGroup(10); //udp
         Bootstrap b = new Bootstrap();
         b.group(group).channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_BROADCAST, true)

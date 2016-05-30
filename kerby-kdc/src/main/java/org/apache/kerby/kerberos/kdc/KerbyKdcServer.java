@@ -19,6 +19,7 @@
  */
 package org.apache.kerby.kerberos.kdc;
 
+//import org.apache.kerby.kerberos.kdc.impl.NettyKdcHandler;
 import org.apache.kerby.kerberos.kdc.impl.NettyKdcServerImpl;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.LocalKadmin;
@@ -89,5 +90,30 @@ public class KerbyKdcServer extends KdcServer {
 
         server.start();
         System.out.println("KDC started.");
+
+
+        /**
+         * long[] oldData = NettyKdcHandler.getStatData(true);
+        long tmStart = System.nanoTime();
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                oldData[0]++;
+            }
+            long[] nowData = NettyKdcHandler.getStatData(true);
+            long tmNow = System.nanoTime();
+            double secs = (tmNow - tmStart) / 1000000000.0;
+            tmStart = tmNow;
+            if (nowData[0] > 0) {
+                System.out.println("" + secs + "   " + "reqs/sec=" + nowData[0] / secs
+                        + " avgProcTime=" + nowData[1] / 1000000.0 / nowData[0]
+                        + " minProcTime=" + nowData[2] / 1000000.0 + " maxProcTime=" + nowData[3] / 1000000.0);
+            } else {
+                System.out.println("reqs/sec=" + 0 + " avgProcTime=" + 0
+                        + " minProcTime=" + 0 + " maxProcTime=" + 0);
+            }
+        }
+        */
     }
 }

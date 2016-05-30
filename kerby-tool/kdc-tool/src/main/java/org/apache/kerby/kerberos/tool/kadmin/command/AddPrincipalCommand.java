@@ -25,17 +25,12 @@ import org.apache.kerby.kerberos.kerb.admin.LocalKadmin;
 import org.apache.kerby.kerberos.kerb.admin.KadminOption;
 import org.apache.kerby.kerberos.tool.kadmin.ToolUtil;
 
-import java.io.Console;
-import java.util.Arrays;
-import java.util.Scanner;
-
 public class AddPrincipalCommand extends KadminCommand {
-    private static final String USAGE = "Usage: add_principal [options] principal\n"
+    private static final String USAGE = "Usage: add_principal [options]\n"
             + "\toptions are:\n"
-            + "\t\t[-randkey|-nokey] [-x db_princ_args]* [-expire expdate] "
             + "[-pwexpire pwexpdate] [-maxlife maxtixlife]\n"
             + "\t\t[-kvno kvno] [-policy policy] [-clearpolicy]\n"
-            + "\t\t[-pw password] [-maxrenewlife maxrenewlife]\n"
+            + "\t\t[-size principal's numbers,must be greater than zero]\n"
             + "\t\t[-e keysaltlist]\n"
             + "\t\t[{+|-}attribute]\n"
             + "\tattributes are:\n"
@@ -48,7 +43,7 @@ public class AddPrincipalCommand extends KadminCommand {
             + "\t[-x db_princ_args]* - any number of database specific arguments.\n"
             + "\t\t\tLook at each database documentation for supported arguments.\n"
             + "\tExample:\n"
-            + "\t\tadd_principal -expire 23/04/15:01:01:01 -kvno 1 -pw mypassword test@EXAMPLE.COM";
+            + "\tadd_principal -expire 23/04/15:01:01:01 -kvno 1 -size 6";
 
 
     private KOptions kOptions;
@@ -64,85 +59,54 @@ public class AddPrincipalCommand extends KadminCommand {
             System.err.println(USAGE);
             return;
         }
+        kOptions = ToolUtil.parseOptions(commands, 1, commands.length - 1);
 
-        kOptions = ToolUtil.parseOptions(commands, 1, commands.length - 2);
-        if (kOptions == null) {
+        int size;
+        if (kOptions.contains(KadminOption.SIZE)) {
+            String sizeTemp = kOptions.getStringOption(KadminOption.SIZE);
+
+            String isNum = "^[1-9][0-9]+";
+            if (sizeTemp.matches(isNum)) {
+                size = Integer.parseInt(sizeTemp);
+            } else {
+                System.err.println(USAGE);
+                return;
+            }
+        } else {
             System.err.println(USAGE);
             return;
         }
-        String principal = commands[commands.length - 1];
 
-        if (kOptions.contains(KadminOption.RANDKEY)) {
+        if (size <= 0) {
+            System.err.println(USAGE);
+            return;
+        }
+
+        int existNumbers = 0;
+        try {
+            existNumbers = getKadmin().size();
+        } catch (KrbException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        addPrincipalForSize(size, existNumbers);
+    }
+
+    private void addPrincipalForSize(int size, int existNumbers) {
+        int i = 0;
+        while (i < size) {
             try {
-                getKadmin().addPrincipal(principal, kOptions);
+                int temp = i + existNumbers;
+                String principalName = "E" + temp + "@EXAMPLE.COM";
+                String password = "12";
+                getKadmin().addPrincipal(principalName, password, kOptions);
             } catch (KrbException e) {
-                System.err.println("Fail to add principal \"" + principal + "\"." + e.getMessage());
+                e.printStackTrace();
             }
-        } else {
-
-            String password;
-            if (kOptions.contains(KadminOption.PW)) {
-                password = kOptions.getStringOption(KadminOption.PW);
-            } else {
-                password = getPassword(principal);
-            }
-
-            if (password == null) {
-                return;
-            }
-
-            try {
-                getKadmin().addPrincipal(principal, password, kOptions);
-                System.out.println("Principal \"" + principal + "\" created.");
-            } catch (KrbException e) {
-                System.err.println("Fail to add principal \"" + principal + "\"." + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Get password for the input principal from console
-     */
-    private String getPassword(String principal) {
-        String passwordOnce;
-        String passwordTwice;
-
-        Console console = System.console();
-        if (console == null) {
-            System.out.println("Couldn't get Console instance, "
-                    + "maybe you're running this from within an IDE. "
-                    + "Use scanner to read password.");
-            Scanner scanner = new Scanner(System.in, "UTF-8");
-            passwordOnce = getPassword(scanner,
-                    "Enter password for principal \"" + principal + "\":");
-            passwordTwice = getPassword(scanner,
-                    "Re-enter password for principal \"" + principal + "\":");
-
-        } else {
-            passwordOnce = getPassword(console,
-                    "Enter password for principal \"" + principal + "\":");
-            passwordTwice = getPassword(console,
-                    "Re-enter password for principal \"" + principal + "\":");
+            i++;
         }
 
-        if (!passwordOnce.equals(passwordTwice)) {
-            System.err.println("add_principal: Password mismatch while reading password for \""
-                    + principal + "\".");
-            return null;
-        }
-        return passwordOnce;
-    }
-
-    private String getPassword(Scanner scanner, String prompt) {
-        System.out.println(prompt);
-        return scanner.nextLine().trim();
-    }
-
-    private String getPassword(Console console, String prompt) {
-        console.printf(prompt);
-        char[] passwordChars = console.readPassword();
-        String password = new String(passwordChars).trim();
-        Arrays.fill(passwordChars, ' ');
-        return password;
+        System.out.println("Principals created");
     }
 }

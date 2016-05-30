@@ -49,6 +49,11 @@ public abstract class KrbHandler {
     private static final Logger LOG = LoggerFactory.getLogger(KrbHandler.class);
     private PreauthHandler preauthHandler;
 
+    private boolean enCodeFlag = true;
+    private ByteBuffer enCodeRequestMessage = null;
+    //private static KdcReq reKdcReq = null;
+    //private static KdcRequest rekdcRequest = null;
+
     /**
      * Init with krbcontext.
      *
@@ -66,26 +71,37 @@ public abstract class KrbHandler {
      * @throws KrbException e
      */
     public void handleRequest(KdcRequest kdcRequest) throws KrbException {
-        kdcRequest.process();
-        KdcReq kdcReq = kdcRequest.getKdcReq();
-        int bodyLen = kdcReq.encodingLength();
-        KrbTransport transport = (KrbTransport) kdcRequest.getSessionData();
-        boolean isTcp = transport.isTcp();
-        ByteBuffer requestMessage;
+        if (enCodeFlag) {
+            ByteBuffer requestMessage;
+            kdcRequest.process();
+            KdcReq kdcReq = kdcRequest.getKdcReq();
+            int bodyLen = kdcReq.encodingLength();
+            KrbTransport transport = (KrbTransport) kdcRequest.getSessionData();
+            boolean isTcp = transport.isTcp();
 
-        if (!isTcp) {
-            requestMessage = ByteBuffer.allocate(bodyLen);
+            if (!isTcp) {
+                requestMessage = ByteBuffer.allocate(bodyLen);
+            } else {
+                requestMessage = ByteBuffer.allocate(bodyLen + 4);
+                requestMessage.putInt(bodyLen);
+            }
+            KrbCodec.encode(kdcReq, requestMessage);
+            requestMessage.flip();
+            try {
+                sendMessage(kdcRequest, requestMessage);
+            } catch (IOException e) {
+                throw new KrbException("sending message failed", e);
+            }
 
+            enCodeFlag = false;
+            enCodeRequestMessage = requestMessage;
         } else {
-            requestMessage = ByteBuffer.allocate(bodyLen + 4);
-            requestMessage.putInt(bodyLen);
-        }
-        KrbCodec.encode(kdcReq, requestMessage);
-        requestMessage.flip();
-        try {
-            sendMessage(kdcRequest, requestMessage);
-        } catch (IOException e) {
-            throw new KrbException("sending message failed", e);
+            //KrbCodec.encode(kdcRequest.getKdcReq(), enCodeRequestMessage);
+            try {
+                sendMessage(kdcRequest, enCodeRequestMessage);
+            } catch (IOException e) {
+                throw new KrbException("sending message failed", e);
+            }
         }
     }
 
@@ -105,10 +121,8 @@ public abstract class KrbHandler {
         } catch (IOException e) {
             throw new KrbException("Krb decoding message failed", e);
         }
-
         KrbMessageType messageType = kdcRep.getMsgType();
         if (messageType == KrbMessageType.AS_REP) {
-
             kdcRequest.processResponse((KdcRep) kdcRep);
         } else if (messageType == KrbMessageType.TGS_REP) {
             kdcRequest.processResponse((KdcRep) kdcRep);
