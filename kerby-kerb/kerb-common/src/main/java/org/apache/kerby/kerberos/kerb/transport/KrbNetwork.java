@@ -42,9 +42,6 @@ public class KrbNetwork {
             try {
                 transport = tcpConnect();
             } catch (IOException e) {
-                System.out.println(tpair.tcpAddress.getAddress() + "," + tpair.tcpAddress.getHostName()
-                        + "," + tpair.tcpAddress.getPort());
-                e.printStackTrace();
                 if (tpair.udpAddress != null) {
                     transport = new KrbUdpTransport(tpair.udpAddress);
                 }

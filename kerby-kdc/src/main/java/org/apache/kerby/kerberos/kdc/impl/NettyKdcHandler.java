@@ -35,38 +35,6 @@ public class NettyKdcHandler extends ChannelInboundHandlerAdapter {
     private final KdcHandler myKdcHandler;
     private static final Logger LOG = LoggerFactory.getLogger(NettyKdcHandler.class);
 
-
-
-    /**
-     *
-    public static int REQ_COUNT = 0;
-    public static int SUM_PROC_TIME = 1;
-    public static int MIN_PROC_TIME = 2;
-    public static int MAX_PROC_TIME = 3;
-     private static long[] statData = new long[4];
-     private static Object statDataLock = new Object();
-     */
-
-    /**
-     *
-     * @param reset
-     * @return
-
-    public static long[] getStatData(boolean reset) {
-        long[] ret;
-        synchronized (statDataLock) {
-            ret = statData.clone();
-            if (reset) {
-                statData[0] = 0;
-                statData[1] = 0;
-                statData[2] = 0;
-                statData[3] = 0;
-            }
-        }
-        return ret;
-    }
-     */
-
     public NettyKdcHandler(KdcContext kdcContext) {
         this.myKdcHandler = new KdcHandler(kdcContext);
     }
@@ -84,20 +52,9 @@ public class NettyKdcHandler extends ChannelInboundHandlerAdapter {
                 (InetSocketAddress) ctx.channel().remoteAddress();
         boolean isTcp = true; //TODO:
         try {
-            //long stm = System.nanoTime();
             ByteBuffer responseMessage = myKdcHandler.handleMessage(requestMessage,
                     isTcp, clientAddress.getAddress());
             ctx.writeAndFlush(Unpooled.wrappedBuffer(responseMessage));
-            //long cost = System.nanoTime() - stm;
-            /**
-             *
-            synchronized (statDataLock) {
-                statData[0]++;
-                statData[1] += cost;
-                statData[2] = statData[2] > cost ? cost : statData[2] == 0 ? cost : statData[2];
-                statData[3] = statData[2] > cost ? statData[2] : cost;
-            }
-             */
         } catch (Exception e) {
             LOG.error("Error occurred while processing request:"
                     + e);

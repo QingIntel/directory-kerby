@@ -28,25 +28,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class DefaultKrbHandler extends KrbHandler {
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void handleRequest(KdcRequest kdcRequest) throws KrbException {
-
         KrbTransport transport = (KrbTransport) kdcRequest.getSessionData();
         transport.setAttachment(kdcRequest);
 
         super.handleRequest(kdcRequest);
-
-        //ByteBuffer receivedMessage = null;
+        ByteBuffer receivedMessage = null;
         try {
-            //receivedMessage = transport.receiveMessage();
-            transport.receiveMessage();
+            receivedMessage = transport.receiveMessage();
         } catch (IOException e) {
             throw new KrbException("Receiving response message failed", e);
         }
-        //super.onResponseMessage(kdcRequest, receivedMessage);
+        super.onResponseMessage(kdcRequest, receivedMessage);
     }
 
     /**
