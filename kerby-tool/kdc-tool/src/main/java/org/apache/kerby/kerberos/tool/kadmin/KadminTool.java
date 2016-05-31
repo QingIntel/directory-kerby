@@ -24,16 +24,7 @@ import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.LocalKadmin;
 import org.apache.kerby.kerberos.kerb.admin.LocalKadminImpl;
 import org.apache.kerby.kerberos.kerb.admin.KadminOption;
-import org.apache.kerby.kerberos.tool.kadmin.command.AddPrincipalCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.ChangePasswordCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.DeletePrincipalCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.GetPrincipalCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.KadminCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.KeytabAddCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.KeytabRemoveCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.ListPrincipalCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.ModifyPrincipalCommand;
-import org.apache.kerby.kerberos.tool.kadmin.command.RenamePrincipalCommand;
+import org.apache.kerby.kerberos.tool.kadmin.command.*;
 import org.apache.kerby.util.OSUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +47,8 @@ public class KadminTool {
             + "\n"
             + "add_principal, addprinc, ank\n"
             + "                         Add principal\n"
+            + "batch_anks, batch\n"
+            + "                         Add principals\n"
             + "delete_principal, delprinc\n"
             + "                         Delete principal\n"
             + "modify_principal, modprinc\n"
@@ -121,6 +114,9 @@ public class KadminTool {
                 || command.startsWith("addprinc")
                 || command.startsWith("ank")) {
             executor = new AddPrincipalCommand(kadmin);
+        } else if (command.startsWith("batch_anks")
+                || command.startsWith("batch")) {
+            executor = new AddPrincipalsCommand(kadmin);
         } else if (command.startsWith("ktadd")
                 || command.startsWith("xst")) {
             executor = new KeytabAddCommand(kadmin);

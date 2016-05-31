@@ -14,7 +14,7 @@
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
- *  under the License. 
+ *  under the License.
  *
  */
 package org.apache.kerby.kerberos.tool.kinit;
@@ -24,7 +24,6 @@ import org.apache.kerby.KOptionGroup;
 import org.apache.kerby.KOptionInfo;
 import org.apache.kerby.KOptionType;
 import org.apache.kerby.KOptions;
-import org.apache.kerby.kerberos.kerb.KrbConstant;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.client.KrbClient;
 import org.apache.kerby.kerberos.kerb.client.KrbKdcOption;
@@ -32,22 +31,28 @@ import org.apache.kerby.kerberos.kerb.client.KrbOption;
 import org.apache.kerby.kerberos.kerb.client.KrbOptionGroup;
 import org.apache.kerby.kerberos.kerb.client.PkinitOption;
 import org.apache.kerby.kerberos.kerb.client.TokenOption;
-import org.apache.kerby.kerberos.kerb.type.ticket.SgtTicket;
-import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
 import org.apache.kerby.util.OSUtil;
-import org.apache.kerby.util.SysUtil;
-
-import java.io.Console;
 import java.io.File;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * kinit like tool
+ * kinit like tool with concurrence
  *
- * Ref. MIT kinit command tool usage.
+ * Ref. MIT kinit command tool usage.aa
  */
-public class KinitTool {
+public class KinitToolWithConcurrence {
+    /**
+     * control the number of request
+     */
+    private static int[] reList = new int[100000];
+    private static String[] prList = new String[10000];
+    private static KOptions ktOptions = new KOptions();
+    private static int thFlag = 0;
+    private static Long startTime = 0L;
+    private static Lock lock = new ReentrantLock();
+    private static int tmpTotals = 0;
+    private static final int INTERVAL = 16;
 
     private static final String USAGE = (OSUtil.isWindows()
             ? "Usage: bin\\kinit.cmd" : "Usage: sh bin/kinit.sh")
@@ -90,30 +95,8 @@ public class KinitTool {
         System.exit(-1);
     }
 
-    /**
-     * Get password for the input principal from console
-     */
-    private static String getPassword(String principal) {
-        Console console = System.console();
-        if (console == null) {
-            System.out.println("Couldn't get Console instance, "
-                    + "maybe you're running this from within an IDE. "
-                    + "Use scanner to read password.");
-            System.out.println("Password for " + principal + ":");
-            try (Scanner scanner = new Scanner(System.in, "UTF-8")) {
-                return scanner.nextLine().trim();
-            }
-        }
-        console.printf("Password for " + principal + ":");
-        char[] passwordChars = console.readPassword();
-        String password = new String(passwordChars).trim();
-        Arrays.fill(passwordChars, ' ');
-
-        return password;
-    }
-
     private static void requestTicket(String principal,
-                                      KOptions ktOptions) throws KrbException {
+                                      KOptions ktOptions, int flag) throws KrbException {
         ktOptions.add(KinitOption.CLIENT_PRINCIPAL, principal);
 
         File confDir = null;
@@ -127,7 +110,7 @@ public class KinitTool {
         } else if (!ktOptions.contains(KinitOption.USE_KEYTAB)) {
             //If not request tickets by keytab than by password.
             ktOptions.add(KinitOption.USE_PASSWD);
-            String password = getPassword(principal);
+            String password = "12";
             ktOptions.add(KinitOption.USER_PASSWD, password);
         }
 
@@ -139,39 +122,16 @@ public class KinitTool {
             System.exit(1);
         }
 
-        TgtTicket tgt = null;
+        KOptions results =  convertOptions(ktOptions);
         try {
-            tgt = krbClient.requestTgt(convertOptions(ktOptions));
+            flag *= INTERVAL;
+            while (true) {
+                krbClient.requestTgt(results);
+                reList[flag] += 1;
+            }
         } catch (KrbException e) {
             System.err.println("Authentication failed: " + e.getMessage());
             System.exit(1);
-        }
-
-        File ccacheFile;
-        if (ktOptions.contains(KrbOption.KRB5_CACHE)) {
-            String ccacheName = ktOptions.getStringOption(KrbOption.KRB5_CACHE);
-            ccacheFile = new File(ccacheName);
-        } else {
-            String ccacheName = principal.replaceAll("/", "_");
-            ccacheName = "krb5_" + ccacheName + ".cc";
-            ccacheFile = new File(SysUtil.getTempDir(), ccacheName);
-        }
-
-        try {
-            krbClient.storeTicket(tgt, ccacheFile);
-        } catch (KrbException e) {
-            System.err.println("Store ticket failed: " + e.getMessage());
-            System.exit(1);
-        }
-
-        System.out.println("Successfully requested and stored ticket in "
-            + ccacheFile.getAbsolutePath());
-        if (ktOptions.contains(KinitOption.SERVICE)) {
-            String servicePrincipal = ktOptions.getStringOption(KinitOption.SERVICE);
-            SgtTicket sgtTicket =
-                    krbClient.requestSgt(tgt, servicePrincipal);
-            System.out.println("Successfully requested the service ticket for " + servicePrincipal
-            + "\nKey version: " + sgtTicket.getTicket().getTktvno());
         }
     }
 
@@ -192,9 +152,9 @@ public class KinitTool {
     }
 
     public static void main(String[] args) throws Exception {
-        KOptions ktOptions = new KOptions();
         KinitOption kto;
-        String principal = null;
+        String principalNumbers = null;
+        String startIndex = null;
 
         int i = 0;
         String opt, param, error;
@@ -210,8 +170,10 @@ public class KinitTool {
                     break;
                 }
             } else {
-                principal = opt;
+                principalNumbers = opt;
                 kto = KinitOption.NONE;
+                // require a parameter
+                startIndex = args[i++];
             }
 
             if (kto != KinitOption.NONE && kto.getOptionInfo().getType() != KOptionType.NOV) {
@@ -235,16 +197,99 @@ public class KinitTool {
             }
         }
 
-        if (principal == null) {
-            if (ktOptions.contains(KinitOption.ANONYMOUS)) {
-                principal = KrbConstant.ANONYMOUS_PRINCIPAL;
-            } else {
-                printUsage("No principal is specified");
-            }
+        int threadNumbers = Integer.parseInt(principalNumbers);
+        int stIndex = Integer.parseInt(startIndex);
+
+        if (threadNumbers <= 0) {
+            printUsage("principal must be greater than zero");
+            System.exit(-1);
         }
 
-        requestTicket(principal, ktOptions);
-        System.exit(0);
+        for (int j = 0; j < threadNumbers; j++) {
+            int tmpIndex = j + stIndex;
+            String tempName = "E" + tmpIndex + "@EXAMPLE.COM";
+            prList[j] = tempName;
+        }
+
+        for (int j = 0; j < threadNumbers; j++) {
+            Thread th = new Thread(new PreThread());
+            th.start();
+        }
+
+        // statistical
+        int[] tempDelayNumbers = new int[threadNumbers];
+        int[] delayNumbers = new int[threadNumbers];
+        startTime = System.currentTimeMillis();
+        Long timeStamp = System.currentTimeMillis();
+
+        int max = 0;
+        int min = 0;
+
+        System.out.println("Time stamp (sec),Throughput (sec),"
+                + "avgDelay (ms),maxDelay (ms),minDelay (ms)");
+
+        while (true) {
+            Thread.sleep(2000);
+            int temp = 0;
+            Long now = System.currentTimeMillis();
+
+            for (int j = 0; j < threadNumbers; j++) {
+                delayNumbers[j] = reList[j * INTERVAL] - delayNumbers[j];
+                tempDelayNumbers[j] =  reList[j * INTERVAL];
+            }
+
+            for (int j = 0; j < threadNumbers; j++) {
+                temp += reList[j * INTERVAL];
+            }
+            float res = (now - startTime) / 1000;
+
+            int totalDelay = 0;
+            for (int j = 0; j < threadNumbers; j++) {
+                if (delayNumbers[j] != 0) {
+                    if (delayNumbers[max] < delayNumbers[j]) {
+                        max = j;
+                    }
+                    if (delayNumbers[min] == 0 || delayNumbers[min] > delayNumbers[j]) {
+                        min = j;
+                    }
+                    totalDelay += (now - startTime) / delayNumbers[j];
+                }
+            }
+            if (delayNumbers[min] != 0 && delayNumbers[max] != 0) {
+                System.out.println((now - timeStamp) / 1000 + "," + (temp - tmpTotals) / res
+                        + "," + totalDelay / threadNumbers
+                        + "," + (now - startTime) / delayNumbers[min] + "," + (now - startTime) / delayNumbers[max]);
+            }
+
+            tmpTotals = temp;
+            startTime = now;
+        }
+
+    }
+
+    public static class PreThread implements Runnable {
+        @Override
+        public void run() {
+            try {
+                request();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void request() throws Exception {
+        int tempFlag = 0;
+        lock.lock();
+        try {
+            tempFlag = thFlag;
+            thFlag++;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+        requestTicket(prList[tempFlag], ktOptions, tempFlag);
     }
 
     /**
@@ -277,4 +322,5 @@ public class KinitTool {
 
         return results;
     }
+
 }

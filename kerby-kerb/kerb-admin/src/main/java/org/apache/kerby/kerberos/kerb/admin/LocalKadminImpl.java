@@ -379,7 +379,7 @@ public class LocalKadminImpl implements LocalKadmin {
     }
 
     /**
-     * get size of principalName
+     * get size of principal
      */
     @Override
     public int size() throws KrbException {
