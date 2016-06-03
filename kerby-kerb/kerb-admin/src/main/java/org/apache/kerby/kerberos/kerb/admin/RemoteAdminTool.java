@@ -51,7 +51,9 @@ public class RemoteAdminTool {
         + "delete_principal, delprinc\n"
         + "                         Delete principal\n"
         + "rename_principal, renprinc\n"
-        + "                         Rename principal\n";
+        + "                         Rename principal\n"
+        + "list_principals, listprincs, get_principals, getprincs\n"
+        + "                         List principals\n";
 
     public static void main(String[] args) throws Exception {
         AdminClient adminClient;
