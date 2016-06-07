@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * KDC handler to process client requests. Currently only one realm is supported.
@@ -81,6 +82,10 @@ public class AdminServerHandler {
             case RENAME_PRINCIPAL_REQ:
                 System.out.println("message type: rename principal req");
                 responseMessage = handleRenamePrincipalReq(localKadmin, fieldInfos);
+                break;
+            case GRT_PRINCS_REQ:
+                System.out.println("message type getPrincs req");
+                responseMessage = handleGetprincsReq(localKadmin, fieldInfos);
                 break;
             default:
                 throw new KrbException("AdminMessageType error, can not handle it.");
@@ -220,5 +225,54 @@ public class AdminServerHandler {
         renamePrincipalRep.setMessageBuffer(ByteBuffer.wrap(value.encode()));
         ByteBuffer responseMessage = KadminCode.encodeMessage(renamePrincipalRep);
         return responseMessage;
+    }
+
+    private ByteBuffer handleGetprincsReq(LocalKadmin localKadmin, XdrFieldInfo[] fieldInfos) throws IOException {
+        String globString = ((String) fieldInfos[2].getValue());
+        List<String> princsList = null;
+
+        try {
+            if (globString == null || globString.isEmpty()) {
+                princsList = localKadmin.getPrincipals();
+            } else {
+                princsList = localKadmin.getPrincipals(globString);
+            }
+            ByteBuffer responseMessage = infoPackageTool(listToString(princsList), "getPrincs");
+            return responseMessage;
+        } catch (KrbException e) {
+            String error = "principal do not exist.";
+            ByteBuffer responseError = infoPackageTool(error, "getPrincs");
+            return responseError;
+        }
+    }
+
+    private ByteBuffer infoPackageTool(String message, String dealType) throws IOException {
+        AdminMessage adminMessage = null;
+        XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
+
+        if (dealType.equals("getPrincs")) {
+            adminMessage = new GetprincsRep();
+            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.GRT_PRINCS_REP);
+        }
+        xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
+        xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, message);
+
+        AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
+        adminMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
+
+        ByteBuffer responseMessage = KadminCode.encodeMessage(adminMessage);
+        return responseMessage;
+    }
+
+    private String listToString(List<String> list) {
+        if (list.size() <= 0) {
+            return null;
+        }
+        //Both speed and safety,so use StringBuffer
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < list.size(); i++) {
+            result.append(list.get(i)).append(" ");
+        }
+        return result.toString();
     }
 }

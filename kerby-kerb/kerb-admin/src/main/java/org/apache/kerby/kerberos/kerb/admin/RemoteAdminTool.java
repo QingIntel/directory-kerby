@@ -22,10 +22,7 @@ package org.apache.kerby.kerberos.kerb.admin;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.AdminClient;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.AdminConfig;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteAddPrincipalCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteDeletePrincipalCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteRenamePrincipalCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.*;
 import org.apache.kerby.util.OSUtil;
 
 import java.io.File;
@@ -35,6 +32,7 @@ import java.util.Scanner;
  * Command use of remote admin
  */
 public class RemoteAdminTool {
+    private static final String PROMPT = RemoteAdminTool.class.getSimpleName() + ".local:";
     private static final String USAGE = (OSUtil.isWindows()
         ? "Usage: bin\\remoteAdmin.cmd" : "Usage: sh bin/remoteAdmin.sh")
         + " <conf-file>\n"
@@ -52,7 +50,7 @@ public class RemoteAdminTool {
         + "                         Delete principal\n"
         + "rename_principal, renprinc\n"
         + "                         Rename principal\n"
-        + "list_principals, listprincs, get_principals, getprincs\n"
+        + "list_principals, listprincs\n"
         + "                         List principals\n";
 
     public static void main(String[] args) throws Exception {
@@ -89,6 +87,7 @@ public class RemoteAdminTool {
 
             while (!(input.equals("quit") || input.equals("exit") || input.equals("q"))) {
                 excute(adminClient, input);
+                System.out.print(PROMPT);
                 input = scanner.nextLine();
             }
         }
@@ -113,6 +112,9 @@ public class RemoteAdminTool {
         } else if (input.startsWith("rename_principal")
             || input.startsWith("renprinc")) {
             executor = new RemoteRenamePrincipalCommand(adminClient);
+        } else if (input.startsWith("list_principals")
+            || input.startsWith("listprincs")) {
+            executor = new RemoteGetprincsCommand(adminClient);
         } else {
             System.out.println(LEGAL_COMMANDS);
             return;
