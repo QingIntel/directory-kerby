@@ -155,7 +155,6 @@ public class AdminServerHandler {
 
         String[] oldPrincipalName = ((String) fieldInfos[2].getValue()).split("@");
         String[] newPrincipalName = ((String) fieldInfos[3].getValue()).split("@");
-System.out.println(oldPrincipalName[0] + "------" + newPrincipalName[0] + "--------------------AdminServerHandler");
         try {
             localKadmin.renamePrincipal(oldPrincipalName[0], newPrincipalName[0]);
         } catch (KrbException e) {
