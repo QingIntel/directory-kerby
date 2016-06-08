@@ -83,7 +83,7 @@ public class AdminServerHandler {
                 System.out.println("message type: rename principal req");
                 responseMessage = handleRenamePrincipalReq(localKadmin, fieldInfos);
                 break;
-            case GRT_PRINCS_REQ:
+            case GET_PRINCS_REQ:
                 System.out.println("message type getPrincs req");
                 responseMessage = handleGetprincsReq(localKadmin, fieldInfos);
                 break;
@@ -108,14 +108,7 @@ public class AdminServerHandler {
                 String error = "principal already exist!";
                 LOG.error(error);
                 System.err.println(error);
-                XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-                xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.ADD_PRINCIPAL_REP);
-                xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-                xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, error);
-                AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-                AdminMessage errorMessage = new AddPrincipalRep();
-                errorMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-                ByteBuffer response = KadminCode.encodeMessage(errorMessage);
+                ByteBuffer response = infoPackageTool(error, "addPrincipal");
                 return response;
             }
         } else if (paramNum == 2 && fieldInfos[3].getDataType() == XdrDataType.STRING) {
@@ -127,35 +120,15 @@ public class AdminServerHandler {
                 localKadmin.addPrincipal(temp[0], password);
             } catch (KrbException e) {
                 String error = "principal already exist.\n"
-                    + "Choose update password instead of add principal";
+                        + "Choose update password instead of add principal";
                 LOG.error(error);
-                XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-                xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.ADD_PRINCIPAL_REP);
-                xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-                xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, error);
-                AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-                AdminMessage errorMessage = new AddPrincipalRep();
-                errorMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-                ByteBuffer response = KadminCode.encodeMessage(errorMessage);
+                ByteBuffer response = infoPackageTool(error, "addPrincipal");
                 return response;
             }
         }
-
         String message = "add principal of " + principal;
         LOG.info(message);
-        //content to reply remain to construct
-        AdminMessage addPrincipalRep = new AddPrincipalRep();
-        /** encode admin message:
-         *  encode type
-         *  encode message
-         */
-        XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-        xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.ADD_PRINCIPAL_REP);
-        xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-        xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, message);
-        AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-        addPrincipalRep.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-        ByteBuffer responseMessage = KadminCode.encodeMessage(addPrincipalRep);
+        ByteBuffer responseMessage = infoPackageTool(message, "addPrincipal");
         return responseMessage;
     }
 
@@ -168,27 +141,12 @@ public class AdminServerHandler {
         } catch (KrbException e) {
             String error = "no such principal exist!";
             LOG.error(error);
-            XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.DELETE_PRINCIPAL_REP);
-            xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-            xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, error);
-            AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-            AdminMessage errorMessage = new DeletePrincipalRep();
-            errorMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-            ByteBuffer response = KadminCode.encodeMessage(errorMessage);
+            ByteBuffer response = infoPackageTool(error, "deletePrincipal");
             return response;
         }
-
         String message = "delete principal of " + principal;
         LOG.info(message);
-        AdminMessage deletePrincipalRep = new DeletePrincipalRep();
-        XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-        xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.DELETE_PRINCIPAL_REP);
-        xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-        xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, message);
-        AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-        deletePrincipalRep.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-        ByteBuffer responseMessage = KadminCode.encodeMessage(deletePrincipalRep);
+        ByteBuffer responseMessage = infoPackageTool(message, "deletePrincipal");
         return responseMessage;
     }
 
@@ -197,33 +155,19 @@ public class AdminServerHandler {
 
         String[] oldPrincipalName = ((String) fieldInfos[2].getValue()).split("@");
         String[] newPrincipalName = ((String) fieldInfos[3].getValue()).split("@");
-
+System.out.println(oldPrincipalName[0] + "------" + newPrincipalName[0] + "--------------------AdminServerHandler");
         try {
             localKadmin.renamePrincipal(oldPrincipalName[0], newPrincipalName[0]);
         } catch (KrbException e) {
             String error = "the old principal name does not exist, or the new principal name"
-                + " already exists, rename failed.";
+                    + " already exists, rename failed.";
             System.err.println(error);
-            XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.RENAME_PRINCIPAL_REP);
-            xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-            xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, error);
-            AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-            AdminMessage errorMessage = new RenamePrincipalRep();
-            errorMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-            ByteBuffer response = KadminCode.encodeMessage(errorMessage);
+            ByteBuffer response = infoPackageTool(error, "renamePrincipal");
             return response;
         }
 
         String message = "rename " + oldPrincipalName[0] + " to " + newPrincipalName[0];
-        AdminMessage renamePrincipalRep = new RenamePrincipalRep();
-        XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
-        xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.RENAME_PRINCIPAL_REP);
-        xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
-        xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, message);
-        AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
-        renamePrincipalRep.setMessageBuffer(ByteBuffer.wrap(value.encode()));
-        ByteBuffer responseMessage = KadminCode.encodeMessage(renamePrincipalRep);
+        ByteBuffer responseMessage = infoPackageTool(message, "renamePrincipal");
         return responseMessage;
     }
 
@@ -250,10 +194,20 @@ public class AdminServerHandler {
         AdminMessage adminMessage = null;
         XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
 
-        if (dealType.equals("getPrincs")) {
+        if ("getPrincs".equals(dealType)) {
             adminMessage = new GetprincsRep();
-            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.GRT_PRINCS_REP);
+            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.GET_PRINCS_REP);
+        } else if ("renamePrincipal".equals(dealType)) {
+            adminMessage = new RenamePrincipalRep();
+            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.RENAME_PRINCIPAL_REP);
+        } else if ("deletePrincipal".equals(dealType)) {
+            adminMessage = new DeletePrincipalRep();
+            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.DELETE_PRINCIPAL_REP);
+        } else if ("addPrincipal".equals(dealType)) {
+            adminMessage = new AddPrincipalRep();
+            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.ADD_PRINCIPAL_REP);
         }
+
         xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
         xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, message);
 

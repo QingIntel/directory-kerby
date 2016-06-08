@@ -17,10 +17,26 @@
  *  under the License.
  *
  */
-package org.apache.kerby.kerberos.kerb.admin.tool;
+package org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command;
 
-public class GetprincsReq extends AdminReq {
-    public GetprincsReq() {
-        super(AdminMessageType.GET_PRINCS_REQ);
+import org.apache.kerby.kerberos.kerb.KrbException;
+
+public class RemotePrintUsageCommand extends RemoteCommand {
+
+    private static final String LISTPRINCSUSAGE = "Usage: list_principals [expression]\n"
+            + "\t'expression' is a shell-style glob expression that can contain "
+            + "the wild-card characters ?, *, and [].\n"
+            + "\tExample:\n"
+            + "\t\tlist_principals [expression]\n";
+
+    public RemotePrintUsageCommand() {
+        super(null);
+    }
+
+    @Override
+    public void execute(String input) throws KrbException {
+        if (input.startsWith("listprincs")) {
+            System.out.println(LISTPRINCSUSAGE);
+        }
     }
 }

@@ -21,6 +21,6 @@ package org.apache.kerby.kerberos.kerb.admin.tool;
 
 public class GetprincsRep extends AdminRep {
     public GetprincsRep() {
-        super(AdminMessageType.GRT_PRINCS_REP);
+        super(AdminMessageType.GET_PRINCS_REP);
     }
 }

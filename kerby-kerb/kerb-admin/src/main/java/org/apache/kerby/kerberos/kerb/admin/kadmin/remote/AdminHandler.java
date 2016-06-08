@@ -131,14 +131,14 @@ public abstract class AdminHandler {
         AdminMessageType type = (AdminMessageType) fieldInfos[0].getValue();
 
         switch (type) {
-            case GRT_PRINCS_REP:
+            case GET_PRINCS_REP:
                 if (adminRequest.getAdminReq().getAdminMessageType()
-                        == AdminMessageType.GRT_PRINCS_REQ) {
+                        == AdminMessageType.GET_PRINCS_REQ) {
                     String[] temp = ((String) fieldInfos[2].getValue()).trim().split(" ");
                     princalsList = Arrays.asList(temp);
                 } else {
                     throw new KrbException("Response message type error: need "
-                            + AdminMessageType.GRT_PRINCS_REP);
+                            + AdminMessageType.GET_PRINCS_REP);
                 }
                 break;
             default:

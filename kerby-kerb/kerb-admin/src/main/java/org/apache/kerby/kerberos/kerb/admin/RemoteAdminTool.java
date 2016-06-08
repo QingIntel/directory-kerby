@@ -22,18 +22,14 @@ package org.apache.kerby.kerberos.kerb.admin;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.AdminClient;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.AdminConfig;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteAddPrincipalCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteDeletePrincipalCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteRenamePrincipalCommand;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteGetprincsCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.*;
 import org.apache.kerby.util.OSUtil;
 
 import java.io.File;
 import java.util.Scanner;
 
 /**
- * Command use of remote admin
+ * Command use of remote admin list_principals,
  */
 public class RemoteAdminTool {
     private static final String PROMPT = RemoteAdminTool.class.getSimpleName() + ".local:";
@@ -54,8 +50,8 @@ public class RemoteAdminTool {
         + "                         Delete principal\n"
         + "rename_principal, renprinc\n"
         + "                         Rename principal\n"
-        + "list_principals, listprincs\n"
-        + "                         List principals\n";
+        + "listprincs\n"
+        + "          List principals\n";
 
     public static void main(String[] args) throws Exception {
         AdminClient adminClient;
@@ -116,9 +112,10 @@ public class RemoteAdminTool {
         } else if (input.startsWith("rename_principal")
             || input.startsWith("renprinc")) {
             executor = new RemoteRenamePrincipalCommand(adminClient);
-        } else if (input.startsWith("list_principals")
-            || input.startsWith("listprincs")) {
+        } else if (input.startsWith("list_principals")) {
             executor = new RemoteGetprincsCommand(adminClient);
+        } else if (input.startsWith("listprincs")) {
+            executor = new RemotePrintUsageCommand();
         } else {
             System.out.println(LEGAL_COMMANDS);
             return;
