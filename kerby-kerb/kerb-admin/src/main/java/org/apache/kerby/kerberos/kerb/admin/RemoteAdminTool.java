@@ -29,7 +29,7 @@ import java.io.File;
 import java.util.Scanner;
 
 /**
- * Command use of remote admin list_principals,
+ * Command use of remote admin
  */
 public class RemoteAdminTool {
     private static final String PROMPT = RemoteAdminTool.class.getSimpleName() + ".local:";
