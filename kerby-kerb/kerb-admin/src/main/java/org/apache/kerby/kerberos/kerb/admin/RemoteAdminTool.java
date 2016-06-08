@@ -22,8 +22,13 @@ package org.apache.kerby.kerberos.kerb.admin;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.AdminClient;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.AdminConfig;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.*;
 import org.apache.kerby.util.OSUtil;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteAddPrincipalCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteDeletePrincipalCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteRenamePrincipalCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteGetprincsCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemotePrintUsageCommand;
 
 import java.io.File;
 import java.util.Scanner;
