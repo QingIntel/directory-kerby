@@ -293,7 +293,7 @@ public class KerbyContext implements GSSContextSpi {
             }
 
             TgtTicket tgtTicket = KerbyUtil.getTgtTicketFromKerberosTicket(((KerbyInitCred) myCred).ticket);
-            CheckSum checkSum = CountCheckSum.getCheckSum(this, tgtTicket, sgtTicket);
+            CheckSum checkSum = GainCheckSum.getCheckSum(this, tgtTicket, sgtTicket);
 
             ApRequest apRequest = new ApRequest(clientPrincipal, sgtTicket, checkSum);
             try {
