@@ -29,9 +29,9 @@ public class KerbyGssAppTest extends GssAppTest {
     @Before
     @Override
     public void setUp() throws Exception {
+        super.setUp();
         Provider provider = new org.apache.kerby.kerberos.kerb.gssapi.Provider();
         java.security.Security.insertProviderAt(provider, 1);
-        super.setUp();
     }
 
     @Test

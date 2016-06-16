@@ -27,11 +27,7 @@ import org.apache.kerby.kerberos.kerb.type.ap.ApOption;
 import org.apache.kerby.kerberos.kerb.type.ap.ApOptions;
 import org.apache.kerby.kerberos.kerb.type.ap.ApReq;
 import org.apache.kerby.kerberos.kerb.type.ap.Authenticator;
-import org.apache.kerby.kerberos.kerb.type.base.EncryptedData;
-import org.apache.kerby.kerberos.kerb.type.base.EncryptionKey;
-import org.apache.kerby.kerberos.kerb.type.base.HostAddresses;
-import org.apache.kerby.kerberos.kerb.type.base.KeyUsage;
-import org.apache.kerby.kerberos.kerb.type.base.PrincipalName;
+import org.apache.kerby.kerberos.kerb.type.base.*;
 import org.apache.kerby.kerberos.kerb.type.ticket.EncTicketPart;
 import org.apache.kerby.kerberos.kerb.type.ticket.SgtTicket;
 import org.apache.kerby.kerberos.kerb.type.ticket.Ticket;
@@ -47,10 +43,17 @@ public class ApRequest {
     private PrincipalName clientPrincipal;
     private SgtTicket sgtTicket;
     private ApReq apReq;
+    private CheckSum checkSum;
 
     public ApRequest(PrincipalName clientPrincipal, SgtTicket sgtTicket) {
         this.clientPrincipal = clientPrincipal;
         this.sgtTicket = sgtTicket;
+    }
+
+    public ApRequest(PrincipalName clientPrincipal, SgtTicket sgtTicket, CheckSum checkSum) {
+        this.clientPrincipal = clientPrincipal;
+        this.sgtTicket = sgtTicket;
+        this.checkSum = checkSum;
     }
 
     public ApReq getApReq() throws KrbException {
@@ -68,6 +71,9 @@ public class ApRequest {
         ApReq apReq = new ApReq();
 
         Authenticator authenticator = makeAuthenticator();
+        if (checkSum != null) {
+            authenticator.setCksum(this.checkSum);
+        }
         EncryptionKey sessionKey = sgtTicket.getSessionKey();
         EncryptedData authData = EncryptionUtil.seal(authenticator,
                 sessionKey, KeyUsage.AP_REQ_AUTH);

@@ -33,6 +33,7 @@ import org.apache.kerby.kerberos.kerb.type.base.PrincipalName;
 import org.apache.kerby.kerberos.kerb.type.kdc.EncKdcRepPart;
 import org.apache.kerby.kerberos.kerb.type.ticket.EncTicketPart;
 import org.apache.kerby.kerberos.kerb.type.ticket.SgtTicket;
+import org.apache.kerby.kerberos.kerb.type.ticket.TgtTicket;
 import org.apache.kerby.kerberos.kerb.type.ticket.TicketFlags;
 import org.ietf.jgss.ChannelBinding;
 import org.ietf.jgss.GSSContext;
@@ -43,6 +44,7 @@ import sun.security.jgss.GSSCaller;
 import sun.security.jgss.spi.GSSContextSpi;
 import sun.security.jgss.spi.GSSCredentialSpi;
 import sun.security.jgss.spi.GSSNameSpi;
+import org.apache.kerby.kerberos.kerb.type.base.CheckSum;
 
 import javax.security.auth.kerberos.KerberosTicket;
 import java.io.IOException;
@@ -185,6 +187,8 @@ public class KerbyContext implements GSSContextSpi {
         this.channelBinding = cb;
     }
 
+    public ChannelBinding getChannelBinding() { return channelBinding; }
+
     public boolean getCredDelegState() {
         return credDeleg;
     }
@@ -212,6 +216,9 @@ public class KerbyContext implements GSSContextSpi {
     public boolean isTransferable() throws GSSException {
         return false;
     }
+
+    public void setCredDelegState(boolean confState) { this.credDeleg = confState; }
+    public void setDelegPolicyState(boolean delegPolicy) { this.delegPolicy = delegPolicy; }
 
     public boolean isProtReady() {
         return ctxState == STATE_ESTABLISHED;
@@ -285,7 +292,10 @@ public class KerbyContext implements GSSContextSpi {
                 CredUtils.addCredentialToSubject(ticket);
             }
 
-            ApRequest apRequest = new ApRequest(clientPrincipal, sgtTicket);
+            TgtTicket tgtTicket = KerbyUtil.getTgtTicketFromKerberosTicket(((KerbyInitCred) myCred).ticket);
+            CheckSum checkSum = CountCheckSum.getCheckSum(this, tgtTicket, sgtTicket);
+
+            ApRequest apRequest = new ApRequest(clientPrincipal, sgtTicket, checkSum);
             try {
                 outApReq = apRequest.getApReq();
             } catch (KrbException e) {
@@ -375,7 +385,8 @@ public class KerbyContext implements GSSContextSpi {
         }
 
         EncryptionKey key = apRep.getEncRepPart().getSubkey();
-        if (key != null) {
+
+        if (key != null && key.getKeyData() != null && "NONE".equals(key.getKeyType())) {
             setSessionKey(key, ACCEPTOR_SUBKEY);
         }
 
