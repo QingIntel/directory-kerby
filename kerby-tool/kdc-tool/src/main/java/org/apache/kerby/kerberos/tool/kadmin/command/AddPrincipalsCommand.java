@@ -21,9 +21,14 @@ package org.apache.kerby.kerberos.tool.kadmin.command;
 
 import org.apache.kerby.KOptions;
 import org.apache.kerby.kerberos.kerb.KrbException;
+<<<<<<< HEAD
 
 import org.apache.kerby.kerberos.kerb.admin.kadmin.local.LocalKadmin;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.KadminOption;
+=======
+import org.apache.kerby.kerberos.kerb.admin.kadmin.KadminOption;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.local.LocalKadmin;
+>>>>>>> temp1
 import org.apache.kerby.kerberos.tool.kadmin.ToolUtil;
 
 public class AddPrincipalsCommand extends KadminCommand {
