@@ -39,11 +39,16 @@ import java.security.NoSuchAlgorithmException;
 public class GainCheckSum {
 
     public static CheckSum getCheckSum (KerbyContext context, TgtTicket tgtTicket, SgtTicket sgtTicket) {
-        byte[] CkSumBytes = getCkSumBytes(context, tgtTicket, sgtTicket);
-        return new CheckSum(0x8003, CkSumBytes);
+        byte[] CkSumBytes = null;
+        try {
+            CkSumBytes = getCkSumBytes(context, tgtTicket, sgtTicket);
+        } catch (GSSException e) {
+            e.printStackTrace();
+        }
+        return new CheckSum(CheckSumType.RSA_MD5_DES, CkSumBytes);
     }
 
-    private static byte[] getCkSumBytes (KerbyContext kerbyContext, TgtTicket tgt, SgtTicket sgt) {
+    private static byte[] getCkSumBytes (KerbyContext kerbyContext, TgtTicket tgt, SgtTicket sgt) throws GSSException {
         byte[] resultByte = null;
         byte[] kCMessage = null;
         byte pByte = 0;
@@ -67,9 +72,6 @@ public class GainCheckSum {
 
         if(kerbyContext.getCredDelegState()) {
             EncryptionKey key = sgt.getSessionKey();
-            if (key == null) {
-                System.out.println("have error in client key");
-            }
             EncryptedData data = tgt.getTicket().getEncryptedEncPart();
             try {
                 kCMessage = EncryptionHandler.decrypt(data, key, KeyUsage.AS_REP_ENCPART);
@@ -86,6 +88,7 @@ public class GainCheckSum {
         resultByte[pByte++] = (byte)0;
         resultByte[pByte++] = (byte)0;
         resultByte[pByte++] = (byte)0;
+
         ChannelBinding localBindings = kerbyContext.getChannelBinding();
         byte[] localBindingsBytes;
         if(localBindings != null) {
@@ -124,6 +127,7 @@ public class GainCheckSum {
         resultByte[pByte++] = temp[1];
         resultByte[pByte++] = temp[2];
         resultByte[pByte++] = temp[3];
+
         if(kerbyContext.getCredDelegState()) {
             PrincipalName prcName = sgt.getTicket().getSname();
             StringBuffer sb = new StringBuffer("\"");
@@ -140,7 +144,7 @@ public class GainCheckSum {
             resultByte[pByte++] = 1;
             resultByte[pByte++] = 0;
             if(kCMessage.length > 0x0000ffff) {
-                System.out.println("have a error of message length");
+                throw new GSSException(11, -1, "Incorrect message length");
             }
 
             GSSToken.writeLittleEndian(kCMessage.length, temp);

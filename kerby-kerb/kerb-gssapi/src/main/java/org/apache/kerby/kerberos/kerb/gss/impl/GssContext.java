@@ -17,11 +17,12 @@
  *  under the License.
  *
  */
-package org.apache.kerby.kerberos.kerb.gssapi.krb5;
+package org.apache.kerby.kerberos.kerb.gss.impl;
 
 import com.sun.security.jgss.InquireType;
 import org.apache.kerby.kerberos.kerb.KrbException;
-import org.apache.kerby.kerberos.kerb.gssapi.KerbyMechFactory;
+import org.apache.kerby.kerberos.kerb.gss.GssMechFactory;
+import org.apache.kerby.kerberos.kerb.gss.KerbyGssProvider;
 import org.apache.kerby.kerberos.kerb.request.ApRequest;
 import org.apache.kerby.kerberos.kerb.response.ApResponse;
 import org.apache.kerby.kerberos.kerb.type.ad.AuthorizationData;
@@ -54,7 +55,7 @@ import java.nio.ByteBuffer;
 import java.security.Provider;
 
 @SuppressWarnings("PMD")
-public class KerbyContext implements GSSContextSpi {
+public class GssContext implements GSSContextSpi {
 
     private static final int STATE_NONE = 0;
     private static final int STATE_ESTABLISHING = 1;
@@ -67,10 +68,10 @@ public class KerbyContext implements GSSContextSpi {
     private int ctxState = STATE_NONE;
 
     private final GSSCaller caller;
-    private KerbyCredElement myCred;
+    private GssCredElement myCred;
     private boolean initiator;
-    private KerbyNameElement myName;
-    private KerbyNameElement peerName;
+    private GssNameElement myName;
+    private GssNameElement peerName;
     private int lifeTime;
     private ChannelBinding channelBinding;
 
@@ -92,11 +93,11 @@ public class KerbyContext implements GSSContextSpi {
     private TicketFlags ticketFlags;
     private ApReq outApReq;
 
-    private KerbyGssEncryptor gssEncryptor;
+    private GssEncryptor gssEncryptor;
 
     // Called on initiator's side.
-    public KerbyContext(GSSCaller caller, KerbyNameElement peerName, KerbyCredElement myCred,
-                        int lifeTime)
+    public GssContext(GSSCaller caller, GssNameElement peerName, GssCredElement myCred,
+                      int lifeTime)
             throws GSSException {
         if (peerName == null) {
             throw new IllegalArgumentException("Cannot have null peer name");
@@ -112,7 +113,7 @@ public class KerbyContext implements GSSContextSpi {
         peerSequenceNumberLock = new Object();
     }
 
-    public KerbyContext(GSSCaller caller, KerbyAcceptCred myCred)
+    public GssContext(GSSCaller caller, GssAcceptCred myCred)
             throws GSSException {
         this.caller = caller;
         this.myCred = myCred;
@@ -122,13 +123,13 @@ public class KerbyContext implements GSSContextSpi {
         peerSequenceNumberLock = new Object();
     }
 
-    public KerbyContext(GSSCaller caller, byte[] interProcessToken)
+    public GssContext(GSSCaller caller, byte[] interProcessToken)
             throws GSSException {
         throw new GSSException(GSSException.UNAVAILABLE, -1, "Unsupported feature");
     }
 
     public Provider getProvider() {
-        return new org.apache.kerby.kerberos.kerb.gssapi.Provider();
+        return new KerbyGssProvider();
     }
 
     public void requestLifetime(int lifeTime) throws GSSException {
@@ -253,7 +254,7 @@ public class KerbyContext implements GSSContextSpi {
     }
 
     public Oid getMech() throws GSSException {
-        return KerbyMechFactory.getOid();
+        return GssMechFactory.getOid();
     }
 
     public GSSCredentialSpi getDelegCred() throws GSSException {
@@ -278,17 +279,17 @@ public class KerbyContext implements GSSContextSpi {
             // if not, prepare to get it through TGS_REQ
             SgtTicket sgtTicket = null;
             String serviceName = peerName.getPrincipalName().getName();
-            myName = (KerbyNameElement) myCred.getName();
+            myName = (GssNameElement) myCred.getName();
             PrincipalName clientPrincipal = myName.getPrincipalName();
 
-            sgtTicket = KerbyUtil.getSgtCredentialFromContext(caller, clientPrincipal.getName(), serviceName);
+            sgtTicket = GssUtil.getSgtCredentialFromContext(caller, clientPrincipal.getName(), serviceName);
 
             if (sgtTicket == null) {
-                sgtTicket = KerbyUtil.applySgtCredential(((KerbyInitCred) myCred).ticket, serviceName);
+                sgtTicket = GssUtil.applySgtCredential(((GssInitCred) myCred).ticket, serviceName);
 
                 // add this service credential to context
                 final KerberosTicket ticket =
-                        KerbyUtil.convertKrbTicketToKerberosTicket(sgtTicket, myName.getPrincipalName().getName());
+                        GssUtil.convertKrbTicketToKerberosTicket(sgtTicket, myName.getPrincipalName().getName());
                 CredUtils.addCredentialToSubject(ticket);
             }
 
@@ -314,13 +315,13 @@ public class KerbyContext implements GSSContextSpi {
 
             ctxState = STATE_ESTABLISHING;
             if (!getMutualAuthState()) {
-                gssEncryptor = new KerbyGssEncryptor(getSessionKey());
+                gssEncryptor = new GssEncryptor(getSessionKey());
                 ctxState = STATE_ESTABLISHED;
             }
 
         } else if (ctxState == STATE_ESTABLISHING) {
             verifyServerToken(is, mechTokenSize);
-            gssEncryptor = new KerbyGssEncryptor(getSessionKey());
+            gssEncryptor = new GssEncryptor(getSessionKey());
             outApReq = null;
             ctxState = STATE_ESTABLISHED;
         }
@@ -344,9 +345,9 @@ public class KerbyContext implements GSSContextSpi {
 
         EncryptionKey subKey = auth.getSubKey();
         if (subKey != null) {
-            setSessionKey(subKey, KerbyContext.INITIATOR_SUBKEY);
+            setSessionKey(subKey, GssContext.INITIATOR_SUBKEY);
         } else {
-            setSessionKey(sgt.getSessionKey(), KerbyContext.SESSION_KEY);
+            setSessionKey(sgt.getSessionKey(), GssContext.SESSION_KEY);
         }
 
         if (!getMutualAuthState()) {
@@ -408,15 +409,15 @@ public class KerbyContext implements GSSContextSpi {
                 throw new GSSException(GSSException.FAILURE, -1, "No acceptor credential available");
             }
 
-            KerbyAcceptCred acceptCred = (KerbyAcceptCred) myCred;
+            GssAcceptCred acceptCred = (GssAcceptCred) myCred;
             CredUtils.checkPrincipalPermission(
-                    ((KerbyNameElement) acceptCred.getName()).getPrincipalName().getName(), "accept");
+                    ((GssNameElement) acceptCred.getName()).getPrincipalName().getName(), "accept");
 
             if (getMutualAuthState()) {
                 ret = verifyClientToken(acceptCred, is, mechTokenSize);
             }
 
-            gssEncryptor = new KerbyGssEncryptor(getSessionKey());
+            gssEncryptor = new GssEncryptor(getSessionKey());
 
             myCred = null;
             ctxState = STATE_ESTABLISHED;
@@ -425,7 +426,7 @@ public class KerbyContext implements GSSContextSpi {
         return ret;
     }
 
-    private byte[] verifyClientToken(KerbyAcceptCred acceptCred, InputStream is, int mechTokenSize)
+    private byte[] verifyClientToken(GssAcceptCred acceptCred, InputStream is, int mechTokenSize)
             throws GSSException {
         byte[] token;
         ApReq apReq;
@@ -446,7 +447,7 @@ public class KerbyContext implements GSSContextSpi {
         int encryptType = apReq.getTicket().getEncryptedEncPart().getEType().getValue();
 
         // Get server key from credential
-        EncryptionKey serverKey = KerbyUtil.getEncryptionKey(acceptCred.getKeys(), encryptType, kvno);
+        EncryptionKey serverKey = GssUtil.getEncryptionKey(acceptCred.getKeys(), encryptType, kvno);
         if (serverKey == null) {
             throw new GSSException(GSSException.FAILURE, -1, "Server key not found");
         }
@@ -681,13 +682,13 @@ public class KerbyContext implements GSSContextSpi {
             case KRB5_GET_SESSION_KEY:
                 return getSessionKey();
             case KRB5_GET_TKT_FLAGS:
-                return KerbyUtil.ticketFlagsToBooleans(ticketFlags);
+                return GssUtil.ticketFlagsToBooleans(ticketFlags);
             case KRB5_GET_AUTHZ_DATA:
                 if (isInitiator()) {
                     throw new GSSException(GSSException.UNAVAILABLE, -1,
                             "Authorization data not available for initiator");
                 } else {
-                    return KerbyUtil.kerbyAuthorizationDataToJgssAuthorizationDataEntries(authData);
+                    return GssUtil.kerbyAuthorizationDataToJgssAuthorizationDataEntries(authData);
                 }
             case KRB5_GET_AUTHTIME:
                 return authTime;
@@ -749,7 +750,7 @@ public class KerbyContext implements GSSContextSpi {
         }
     }
 
-    public KerbyGssEncryptor getGssEncryptor() {
+    public GssEncryptor getGssEncryptor() {
         return gssEncryptor;
     }
 }
