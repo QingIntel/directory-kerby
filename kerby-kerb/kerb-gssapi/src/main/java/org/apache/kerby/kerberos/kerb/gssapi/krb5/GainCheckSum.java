@@ -29,6 +29,7 @@ import org.ietf.jgss.ChannelBinding;
 import org.ietf.jgss.GSSException;
 import sun.security.jgss.GSSToken;
 
+import org.apache.kerby.kerberos.kerb.gss.impl.GssContext;
 import javax.security.auth.kerberos.DelegationPermission;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -38,7 +39,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class GainCheckSum {
 
-    public static CheckSum getCheckSum (KerbyContext context, TgtTicket tgtTicket, SgtTicket sgtTicket) {
+    public static CheckSum getCheckSum (GssContext context, TgtTicket tgtTicket, SgtTicket sgtTicket) {
         byte[] CkSumBytes = null;
         try {
             CkSumBytes = getCkSumBytes(context, tgtTicket, sgtTicket);
@@ -48,29 +49,30 @@ public class GainCheckSum {
         return new CheckSum(CheckSumType.RSA_MD5_DES, CkSumBytes);
     }
 
-    private static byte[] getCkSumBytes (KerbyContext kerbyContext, TgtTicket tgt, SgtTicket sgt) throws GSSException {
+    private static byte[] getCkSumBytes (GssContext gssContext, TgtTicket tgt, SgtTicket sgt) throws GSSException {
         byte[] resultByte = null;
         byte[] kCMessage = null;
         byte pByte = 0;
-        int totalSize = 4 + 16 + 4;
+        int totalSize = 24; //at least 24 octets
         int kerbyFlag = 0;
 
         if(!tgt.getEncKdcRepPart().getFlags().isFlagSet(TicketFlag.FORWARDABLE)) {
-            kerbyContext.setCredDelegState(false);
-            kerbyContext.setDelegPolicyState(false);
-        } else if(kerbyContext.getCredDelegState()) {
-            if(kerbyContext.getDelegPolicyState() && !sgt.getTicket().getEncPart().getFlags().isFlagSet(TicketFlag.OK_AS_DELEGATE)) {
-                kerbyContext.setDelegPolicyState(false);
+            gssContext.requestCredDeleg(false);
+            gssContext.requestDelegPolicy(false);
+        } else if(gssContext.getCredDelegState()) {
+            if(gssContext.getDelegPolicyState() && !sgt.getTicket().getEncPart().getFlags().isFlagSet(TicketFlag.OK_AS_DELEGATE)) {
+                gssContext.requestDelegPolicy(false);
             }
-        } else if(kerbyContext.getDelegPolicyState()) {
+        } else if(gssContext.getDelegPolicyState()) {
             if(sgt.getTicket().getEncPart().getFlags().isFlagSet(TicketFlag.OK_AS_DELEGATE)) {
-                kerbyContext.setCredDelegState(true);
+                gssContext.requestCredDeleg(true);
             } else {
-                kerbyContext.setDelegPolicyState(false);
+                gssContext.requestDelegPolicy(false);
             }
         }
 
-        if(kerbyContext.getCredDelegState()) {
+        if(gssContext.getCredDelegState()) {
+            totalSize += 4; //at least 28 octets
             EncryptionKey key = sgt.getSessionKey();
             EncryptedData data = tgt.getTicket().getEncryptedEncPart();
             try {
@@ -79,7 +81,7 @@ public class GainCheckSum {
                 e.printStackTrace();
             }
 
-            totalSize += 2 + 2 + kCMessage.length;
+            totalSize += kCMessage.length;
         }
 
         resultByte = new byte[totalSize];
@@ -89,36 +91,31 @@ public class GainCheckSum {
         resultByte[pByte++] = (byte)0;
         resultByte[pByte++] = (byte)0;
 
-        ChannelBinding localBindings = kerbyContext.getChannelBinding();
+        ChannelBinding localBindings = gssContext.getChannelBinding();
         byte[] localBindingsBytes;
         if(localBindings != null) {
-            localBindingsBytes = getChBi(kerbyContext.getChannelBinding());
+            localBindingsBytes = getChBi(gssContext.getChannelBinding());
             System.arraycopy(localBindingsBytes, 0, resultByte, pByte, localBindingsBytes.length);
         }
 
         pByte += 16;
-        if(kerbyContext.getCredDelegState()) {
-            kerbyFlag |= 1;
+        if(gssContext.getCredDelegState()) {
+            kerbyFlag |= 1; //GSS_C_DELEG_FLAG
         }
-
-        if(kerbyContext.getMutualAuthState()) {
-            kerbyFlag |= 2;
+        if(gssContext.getMutualAuthState()) {
+            kerbyFlag |= 2; //GSS_C_MUTUAL_FLAG
         }
-
-        if(kerbyContext.getReplayDetState()) {
-            kerbyFlag |= 4;
+        if(gssContext.getReplayDetState()) {
+            kerbyFlag |= 4; //GSS_C_REPLAY_FLAG
         }
-
-        if(kerbyContext.getSequenceDetState()) {
-            kerbyFlag |= 8;
+        if(gssContext.getSequenceDetState()) {
+            kerbyFlag |= 8; //GSS_C_SEQUENCE_FLAG
         }
-
-        if(kerbyContext.getIntegState()) {
-            kerbyFlag |= 32;
+        if(gssContext.getConfState()) {
+            kerbyFlag |= 16; //GSS_C_CONF_FLAG
         }
-
-        if(kerbyContext.getConfState()) {
-            kerbyFlag |= 16;
+        if(gssContext.getIntegState()) {
+            kerbyFlag |= 32; //GSS_C_INTEG_FLAG
         }
 
         byte[] temp = new byte[4];
@@ -128,7 +125,7 @@ public class GainCheckSum {
         resultByte[pByte++] = temp[2];
         resultByte[pByte++] = temp[3];
 
-        if(kerbyContext.getCredDelegState()) {
+        if(gssContext.getCredDelegState()) {
             PrincipalName prcName = sgt.getTicket().getSname();
             StringBuffer sb = new StringBuffer("\"");
             sb.append(prcName.getName()).append('\"');

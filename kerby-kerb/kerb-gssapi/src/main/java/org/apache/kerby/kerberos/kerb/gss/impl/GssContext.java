@@ -46,6 +46,7 @@ import sun.security.jgss.spi.GSSContextSpi;
 import sun.security.jgss.spi.GSSCredentialSpi;
 import sun.security.jgss.spi.GSSNameSpi;
 import org.apache.kerby.kerberos.kerb.type.base.CheckSum;
+import org.apache.kerby.kerberos.kerb.gssapi.krb5.GainCheckSum;
 
 import javax.security.auth.kerberos.KerberosTicket;
 import java.io.IOException;
@@ -293,7 +294,7 @@ public class GssContext implements GSSContextSpi {
                 CredUtils.addCredentialToSubject(ticket);
             }
 
-            TgtTicket tgtTicket = KerbyUtil.getTgtTicketFromKerberosTicket(((KerbyInitCred) myCred).ticket);
+            TgtTicket tgtTicket = GssUtil.getTgtTicketFromKerberosTicket(((GssInitCred) myCred).ticket);
             CheckSum checkSum = GainCheckSum.getCheckSum(this, tgtTicket, sgtTicket);
 
             ApRequest apRequest = new ApRequest(clientPrincipal, sgtTicket, checkSum);
