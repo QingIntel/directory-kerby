@@ -150,7 +150,7 @@ public class KadminTool {
             executor = new GetPrincipalCommand(kadmin);
         } else if (command.startsWith("list_principals")
                 || command.startsWith("listprincs") || command.startsWith("get_principals")
-                || command.startsWith("getprincs") || command.startsWith("List principals")) {
+                || command.startsWith("get_princs") || command.startsWith("List principals")) {
             executor = new ListPrincipalCommand(kadmin);
         }
         if (executor == null) {

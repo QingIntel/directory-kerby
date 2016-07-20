@@ -64,7 +64,7 @@ public class DefaultInternalKrbClient extends AbstractInternalKrbClient {
     private void doRequest(KdcRequest request) throws KrbException {
 
         List<String> kdcList = ClientUtil.getKDCList(getSetting());
-
+        System.out.println(getSetting());
         // tempKdc may include the port number
         Iterator<String> tempKdc = kdcList.iterator();
         if (!tempKdc.hasNext()) {
