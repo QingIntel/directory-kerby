@@ -145,12 +145,12 @@ public class KadminTool {
         } else if (command.startsWith("change_password")
                 || command.startsWith("cpw")) {
             executor = new ChangePasswordCommand(kadmin);
-        } else if (command.startsWith("get_principal") || command.startsWith("getprinc")
+        } else if (command.startsWith("get_principal") || "getprinc".equals(command)
                 || command.startsWith("Get principal")) {
             executor = new GetPrincipalCommand(kadmin);
         } else if (command.startsWith("list_principals")
                 || command.startsWith("listprincs") || command.startsWith("get_principals")
-                || command.startsWith("princs") || command.startsWith("List principals")) {
+                || command.startsWith("getprincs") || command.startsWith("List principals")) {
             executor = new ListPrincipalCommand(kadmin);
         }
         if (executor == null) {
