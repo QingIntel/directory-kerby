@@ -29,6 +29,7 @@ import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteDeletePr
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteGetprincsCommand;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemotePrintUsageCommand;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteRenamePrincipalCommand;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.command.RemoteGetPrincipalCommand;
 import org.apache.kerby.kerberos.kerb.common.KrbUtil;
 import org.apache.kerby.kerberos.kerb.server.KdcConfig;
 import org.apache.kerby.kerberos.kerb.server.KdcUtil;
@@ -74,6 +75,8 @@ public class RemoteAdminClientTool {
         + "                         Delete principal\n"
         + "rename_principal, renprinc\n"
         + "                         Rename principal\n"
+        + "get_principal, getprinc\n"
+        + "                         Get principal\n"
         + "listprincs\n"
         + "          List principals\n";
 
@@ -250,6 +253,9 @@ public class RemoteAdminClientTool {
         } else if (input.startsWith("rename_principal")
             || input.startsWith("renprinc")) {
             executor = new RemoteRenamePrincipalCommand(adminClient);
+        } else if (input.startsWith("get_principal") || input.startsWith("getprinc")
+                || input.startsWith("Get principal")) {
+            executor = new RemoteGetPrincipalCommand(adminClient);
         } else if (input.startsWith("list_principals")) {
             executor = new RemoteGetprincsCommand(adminClient);
         } else if (input.startsWith("listprincs")) {

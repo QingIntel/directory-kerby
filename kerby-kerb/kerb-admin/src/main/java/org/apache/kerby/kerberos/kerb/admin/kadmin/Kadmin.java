@@ -21,8 +21,10 @@ package org.apache.kerby.kerberos.kerb.admin.kadmin;
 
 import org.apache.kerby.KOptions;
 import org.apache.kerby.kerberos.kerb.KrbException;
+import org.apache.kerby.kerberos.kerb.identity.KrbIdentity;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -204,4 +206,8 @@ public interface Kadmin {
      * @throws KrbException e
      */
     void release() throws KrbException;
+
+    HashMap<String, String> getPrincipalForNamre(String princName) throws KrbException;
+
+    KrbIdentity getPrincipal(String principalName) throws KrbException;
 }

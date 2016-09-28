@@ -22,14 +22,8 @@ package org.apache.kerby.kerberos.kerb.admin.server.kadmin;
 import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.local.LocalKadmin;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.local.LocalKadminImpl;
-import org.apache.kerby.kerberos.kerb.admin.message.AddPrincipalRep;
-import org.apache.kerby.kerberos.kerb.admin.message.AdminMessage;
-import org.apache.kerby.kerberos.kerb.admin.message.AdminMessageCode;
-import org.apache.kerby.kerberos.kerb.admin.message.AdminMessageType;
-import org.apache.kerby.kerberos.kerb.admin.message.DeletePrincipalRep;
-import org.apache.kerby.kerberos.kerb.admin.message.GetprincsRep;
-import org.apache.kerby.kerberos.kerb.admin.message.KadminCode;
-import org.apache.kerby.kerberos.kerb.admin.message.RenamePrincipalRep;
+import org.apache.kerby.kerberos.kerb.admin.message.*;
+import org.apache.kerby.kerberos.kerb.identity.KrbIdentity;
 import org.apache.kerby.xdr.XdrDataType;
 import org.apache.kerby.xdr.XdrFieldInfo;
 import org.apache.kerby.xdr.type.XdrStructType;
@@ -39,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -93,6 +88,10 @@ public class AdminServerHandler {
             case GET_PRINCS_REQ:
                 System.out.println("message type getPrincs req");
                 responseMessage = handleGetprincsReq(localKadmin, fieldInfos);
+                break;
+            case GET_PRINCIPAL_REQ:
+                System.out.println("message type getPrincipal req");
+                responseMessage = handleGetprincipalReq(localKadmin, fieldInfos);
                 break;
             default:
                 throw new KrbException("AdminMessageType error, can not handle it.");
@@ -196,6 +195,49 @@ public class AdminServerHandler {
         }
     }
 
+    private ByteBuffer handleGetprincipalReq(LocalKadmin localKadmin, XdrFieldInfo[] fieldInfos)
+            throws KrbException, IOException {
+        System.out.println("getPrincipal1");
+        String principalName = ((String) fieldInfos[2].getValue());
+        KrbIdentity krbIdentity = localKadmin.getPrincipal(principalName);
+        List<KrbIdentity> list = new ArrayList<>();
+        list.add(krbIdentity);
+
+        AdminMessage adminMessage = null;
+        XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
+        adminMessage = new GetPrincipalRep();
+        xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.GET_PRINCIPAL_REP);
+        xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
+        String resultStr = getKrbIdentityStr(list);
+        xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, resultStr);
+        AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
+        adminMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
+
+        ByteBuffer responseMessage = KadminCode.encodeMessage(adminMessage);
+        return responseMessage;
+
+        //ByteBuffer responseMessage = infoPackageTool(krbIdentity.toString(), "getPrincipal");
+    }
+
+    private String getKrbIdentityStr(List<KrbIdentity> list) {
+        if (list.size() <= 0) {
+            return null;
+        }
+        StringBuffer str = new StringBuffer();
+        String segment = "&";
+        for (int i = 0; i < list.size(); i++) {
+            KrbIdentity krb = list.get(i);
+            str.append(krb.getCreatedTime() + segment);
+            str.append(krb.getExpireTime() + segment);
+            str.append(krb.getKdcFlags() + segment);
+            str.append(krb.getPrincipalName() + segment);
+            if (i != list.size() - 1) {
+                str.append("/t");
+            }
+        }
+        return str.toString();
+    }
+
     private ByteBuffer infoPackageTool(String message, String dealType) throws IOException {
         AdminMessage adminMessage = null;
         XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
@@ -212,6 +254,9 @@ public class AdminServerHandler {
         } else if ("addPrincipal".equals(dealType)) {
             adminMessage = new AddPrincipalRep();
             xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.ADD_PRINCIPAL_REP);
+        } else if ("getPrincipal".equals(dealType)) {
+            adminMessage = new GetPrincipalRep();
+            xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.GET_PRINCIPAL_REP);
         }
 
         xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);

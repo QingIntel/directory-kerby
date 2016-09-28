@@ -26,6 +26,7 @@ import org.apache.kerby.kerberos.kerb.transport.KrbTransport;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
 
 public class DefaultAdminHandler extends AdminHandler {
@@ -74,6 +75,22 @@ public class DefaultAdminHandler extends AdminHandler {
             throw new KrbException("Admin receives response message failed", e);
         }
 
+        return prinicalList;
+    }
+
+    @Override
+    public List<HashMap<String, String>> handRequestForMap(AdminRequest adminRequest) throws KrbException {
+        super.handleRequest(adminRequest);
+
+        KrbTransport transport = adminRequest.getTransport();
+        ByteBuffer receiveMessage = null;
+        List<HashMap<String, String>> prinicalList = null;
+        try {
+            receiveMessage = transport.receiveMessage();
+            prinicalList = super.onResponseKrbIdentityList(adminRequest, receiveMessage);
+        } catch (IOException e) {
+            throw new KrbException("Admin receives response message failed", e);
+        }
         return prinicalList;
     }
 }

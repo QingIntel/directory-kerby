@@ -24,18 +24,16 @@ import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.Kadmin;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.DefaultAdminHandler;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.InternalAdminClient;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.AddPrincipalRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.AdminRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.DeletePrincipalRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.GetprincsRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.RenamePrincipalRequest;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.*;
 import org.apache.kerby.kerberos.kerb.common.KrbUtil;
+import org.apache.kerby.kerberos.kerb.identity.KrbIdentity;
 import org.apache.kerby.kerberos.kerb.transport.KrbNetwork;
 import org.apache.kerby.kerberos.kerb.transport.KrbTransport;
 import org.apache.kerby.kerberos.kerb.transport.TransportPair;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -190,6 +188,16 @@ public class RemoteKadminImpl implements Kadmin {
     }
 
     @Override
+    public HashMap<String, String> getPrincipalForNamre(String princName) throws KrbException {
+        AdminRequest getPrincipalResuest = new GetPrincipalRequest(princName);
+        getPrincipalResuest.setTransport(transport);
+        AdminHandler adminHandler = new DefaultAdminHandler();
+        List<HashMap<String, String>> listMap = adminHandler.handRequestForMap(getPrincipalResuest);
+
+        return listMap.get(0);
+    }
+
+    @Override
     public void changePassword(String principal,
                                String newPassword) throws KrbException {
 
@@ -203,5 +211,10 @@ public class RemoteKadminImpl implements Kadmin {
     @Override
     public void release() throws KrbException {
 
+    }
+
+    @Override
+    public KrbIdentity getPrincipal(String principalName) throws KrbException {
+        return null;
     }
 }

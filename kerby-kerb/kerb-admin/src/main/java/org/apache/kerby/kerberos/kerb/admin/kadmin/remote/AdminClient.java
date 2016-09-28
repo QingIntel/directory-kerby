@@ -26,6 +26,7 @@ import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.DefaultInternalAd
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.InternalAdminClient;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -200,5 +201,11 @@ public class AdminClient {
         Kadmin remote = new RemoteKadminImpl(innerClient);
         List<String> principalLists = remote.getPrincipals(exp);
         return principalLists;
+    }
+
+    public HashMap<String, String> getPrincipal(String principalName) throws KrbException {
+        Kadmin remote = new RemoteKadminImpl(innerClient);
+        HashMap<String, String> map = remote.getPrincipalForNamre(principalName);
+        return map;
     }
 }

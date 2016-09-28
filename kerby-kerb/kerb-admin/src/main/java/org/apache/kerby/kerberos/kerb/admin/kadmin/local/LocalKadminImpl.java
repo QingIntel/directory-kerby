@@ -37,10 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +45,7 @@ import java.util.regex.Pattern;
  * The implementation of admin side admin facilities for local mode.
  */
 public class LocalKadminImpl implements LocalKadmin {
+
     private static final Logger LOG = LoggerFactory.getLogger(LocalKadminImpl.class);
 
     private final ServerSetting serverSetting;
@@ -403,5 +401,10 @@ public class LocalKadminImpl implements LocalKadmin {
             principal += "@" + serverSetting.getKdcRealm();
         }
         return principal;
+    }
+
+    @Override
+    public HashMap<String, String> getPrincipalForNamre(String princName) throws KrbException {
+        return null;
     }
 }

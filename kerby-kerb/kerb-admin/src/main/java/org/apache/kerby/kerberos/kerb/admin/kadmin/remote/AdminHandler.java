@@ -30,8 +30,7 @@ import org.apache.kerby.xdr.type.XdrStructType;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public abstract class AdminHandler {
 
@@ -141,11 +140,48 @@ public abstract class AdminHandler {
                             + AdminMessageType.GET_PRINCS_REP);
                 }
                 break;
+            case GET_PRINCIPAL_REP:
+                if (adminRequest.getAdminReq().getAdminMessageType()
+                        == AdminMessageType.GET_PRINCIPAL_REQ) {
+                    String[] temp = ((String) fieldInfos[2].getValue()).trim().split("/t");
+                    princalsList = Arrays.asList(temp);
+                }
+                break;
             default:
                 throw new KrbException("Response message type error: " + type);
         }
 
         return princalsList;
+    }
+
+    public List<HashMap<String, String>> onResponseKrbIdentityList(AdminRequest adminRequest,
+                                                                  ByteBuffer responseMessage) throws KrbException {
+        List<HashMap<String, String>> resultList = new ArrayList<>();
+        List<String> list = onResponseMessageForList(adminRequest, responseMessage);
+        for (int i = 0; i < list.size(); i++) {
+            resultList.add(getMapForStr(list.get(i)));
+        }
+        return resultList;
+    }
+
+    private HashMap<String, String> getMapForStr(String str) {
+        String[] temp = str.trim().split("&");
+        String createTime, expireTime, kdcFlags, principalName;
+        HashMap<String, String> map = new HashMap<>();
+        if (temp.length == 4) {
+            createTime = temp[0];
+            expireTime = temp[1];
+            kdcFlags = temp[2];
+            principalName = temp[3];
+
+            map.put("createTime", createTime);
+            map.put("expireTime", expireTime);
+            map.put("kdcFlags", kdcFlags);
+            map.put("principalName", principalName);
+            return map;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -159,4 +195,6 @@ public abstract class AdminHandler {
                                         ByteBuffer requestMessage) throws IOException;
 
     protected abstract List<String> handleRequestForList(AdminRequest adminRequest) throws KrbException;
+
+    public abstract List<HashMap<String, String>> handRequestForMap(AdminRequest adminRequest) throws KrbException;
 }
