@@ -30,6 +30,7 @@ import org.apache.kerby.kerberos.kerb.admin.message.DeletePrincipalRep;
 import org.apache.kerby.kerberos.kerb.admin.message.GetprincsRep;
 import org.apache.kerby.kerberos.kerb.admin.message.KadminCode;
 import org.apache.kerby.kerberos.kerb.admin.message.RenamePrincipalRep;
+import org.apache.kerby.kerberos.kerb.admin.message.GetprincipalListRep;
 import org.apache.kerby.xdr.XdrDataType;
 import org.apache.kerby.xdr.XdrFieldInfo;
 import org.apache.kerby.xdr.type.XdrStructType;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.ArrayList;
+import org.apache.kerby.kerberos.kerb.identity.KrbIdentity;
 
 /**
  * admin server handler to process client acmin requests.
@@ -94,11 +97,60 @@ public class AdminServerHandler {
                 System.out.println("message type getPrincs req");
                 responseMessage = handleGetprincsReq(localKadmin, fieldInfos);
                 break;
+            case GET_PRINCIPALLIST_REQ:
+                System.out.println("message type getPrincipalList");
+                responseMessage = handleGetprincipalList(localKadmin);
+                break;
             default:
                 throw new KrbException("AdminMessageType error, can not handle it.");
         }
         return responseMessage;
 
+    }
+
+    private ByteBuffer handleGetprincipalList(LocalKadmin localKadmin)
+            throws IOException, KrbException {
+        List<String> principalNames = localKadmin.getPrincipals();
+        List<KrbIdentity> list = new ArrayList<>();
+        for (int i = 0; i < principalNames.size(); i++) {
+            String principalName = principalNames.get(i);
+            KrbIdentity krbIdentity = localKadmin.getPrincipal(principalName);
+            list.add(krbIdentity);
+        }
+
+        AdminMessage adminMessage = null;
+        XdrFieldInfo[] xdrFieldInfos = new XdrFieldInfo[3];
+        adminMessage = new GetprincipalListRep();
+        xdrFieldInfos[0] = new XdrFieldInfo(0, XdrDataType.ENUM, AdminMessageType.GET_PRINCIPALLIST_REP);
+        xdrFieldInfos[1] = new XdrFieldInfo(1, XdrDataType.INTEGER, 1);
+        String resultStr = getKrbIdentityStr(list);
+        xdrFieldInfos[2] = new XdrFieldInfo(2, XdrDataType.STRING, resultStr);
+        AdminMessageCode value = new AdminMessageCode(xdrFieldInfos);
+        adminMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
+        ByteBuffer responseMessage = KadminCode.encodeMessage(adminMessage);
+        return responseMessage;
+        //ByteBuffer responseMessage = infoPackageTool(krbIdentity.toString(), "getPrincipal");
+    }
+
+    private String getKrbIdentityStr(List<KrbIdentity> list) {
+        if (list.size() <= 0) {
+            return null;
+        }
+        StringBuffer str = new StringBuffer();
+        String segment = "&";
+        for (int i = 0; i < list.size(); i++) {
+            KrbIdentity krb = list.get(i);
+            String createTime = krb.getCreatedTime().toString();
+            String expireTime = krb.getExpireTime().toString();
+            str.append(createTime.substring(38, createTime.length() - 1) + segment);
+            str.append(expireTime.substring(38, expireTime.length() - 1) + segment);
+            str.append(krb.getKdcFlags() + segment);
+            str.append(krb.getPrincipalName() + segment);
+            if (i != list.size() - 1) {
+                str.append("/t");
+            }
+        }
+        return str.toString();
     }
 
     private ByteBuffer handleAddPrincipalReq(LocalKadmin localKadmin, XdrFieldInfo[] fieldInfos) throws IOException {

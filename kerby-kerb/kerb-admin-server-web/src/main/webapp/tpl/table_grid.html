@@ -1,0 +1,109 @@
+<style type="text/css">
+  .addDiv {
+    margin-bottom: 30px;
+  }
+  .inputDiv{
+    float: right;
+    margin-right: 80px;
+  }
+  .title {
+    margin-bottom: 40px;
+  }
+  .renameDiv{
+    margin-bottom: 30px;
+  }
+</style>
+<!-- Templates -->
+<!-- add_principal-->
+<script type="text/ng-template" id="addDialogId">
+  <div class="ngdialog-message">
+    <div class="title">
+      <span>Add principal</span>
+    </div>
+    <div class="addDiv">
+      <label>Enter principal name</label>
+      <div class="inputDiv">
+         <input id="principalName" name="principalName" ng-model="principalName">
+      </div>
+    </div>
+    <div class="addDiv">
+      <label>Enter password</label>
+      <div class="inputDiv">
+         <input id="password" type="password" name="password" ng-model="password">
+      </div>
+    </div>
+    <div class="addDiv">
+      <label>Enter password again</label>
+      <div class="inputDiv">
+         <input id="passwordAgain" type="password" name="passwordAgain" ng-model="passwordAgain">
+      </div>
+    </div>
+  </div>
+
+  <div class="ngdialog-buttons">
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="addPrincipal(principalName,password,passwordAgain)">OK</button>
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="closeThisDialog('button')">Cancel</button>
+  </div>
+</script>
+<!-- rename_principal -->
+<script type="text/ng-template" id="renameDialogId">
+
+  <div class="ngdialog-message">
+    <div class="title">
+      <span>ReName principal</span>
+    </div>
+    <div class="renameDiv">
+      <label>Enter old principal</label>
+      <div class="inputDiv">
+        <input style="margin-left:51px;" id="oldPrincipalName" name="oldPrincipalName" ng-model="oldPrincipalName" value="{{oldPrincipalName}}">
+      </div>
+    </div>
+    <div class="renameDiv">
+      <label>Enter new principal</label>
+      <div class="inputDiv">
+         <input style="margin-left:43px;" id="newPrincipalName" name="newPrincipalName" ng-model="newPrincipalName">
+      </div>
+    </div>
+  </div>
+  <div class="ngdialog-buttons">
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="renamePrincipal(oldPrincipalName,newPrincipalName)">OK</button>
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="closeThisDialog('button')">Cancel</button>
+  </div>
+
+</script>
+<!-- delete_principal -->
+<script type="text/ng-template" id="deleteDialogId">
+
+  <div class="ngdialog-message">
+    <div class="title">
+      <span>Delete principal</span>
+    </div>
+    <div class="title"><span>Are you sure to delete the principal? </span></div>
+    <div><input style="margin-left:51px;display:none;" id="deletePrincipalName" name="oldPrincipalName" ng-model="oldPrincipalName" value="{{oldPrincipalName}}"></div>
+  </div>
+  <div class="ngdialog-buttons">
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="deletePrincipal(oldPrincipalName)">OK</button>
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="closeThisDialog('button')">Cancel</button>
+  </div>
+
+</script>
+<!-- End Templates -->
+
+<div class="wrapper-md" ng-controller="GridCtrl">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <!--
+      <span>ngGrid</span>
+      <span ng-controller="MainCtrl"><a id="via-service" href="" ng-click="open()">Open via service</a></span>
+      -->
+      <div ng-controller="MainCtrl">
+        <button ng-click="openAdd()" style="margin-left:20px;">add principal</button>
+        <button ng-click="openRename()" style="margin-left:20px;">rename principal</button>
+        <button ng-click="openDelete()" style="margin-left:20px;">delete principal</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <div ng-grid="gridOptions" style="min-height:420px"></div>
+    </div>
+  </div>
+</div>

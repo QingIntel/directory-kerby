@@ -27,6 +27,7 @@ import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.InternalAdminClie
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Admin client API for applications to interact with Admin Server
@@ -199,6 +200,13 @@ public class AdminClient {
     public List<String> requestGetprincsWithExp(String exp) throws KrbException {
         Kadmin remote = new RemoteKadminImpl(innerClient);
         List<String> principalLists = remote.getPrincipals(exp);
+        return principalLists;
+    }
+
+    public List<Map<String, Object>> requestUIPrincs() throws KrbException {
+        System.out.println("AdminClient");
+        Kadmin remote = new RemoteKadminImpl(innerClient);
+        List<Map<String, Object>> principalLists = remote.getPrincipalLists();
         return principalLists;
     }
 }

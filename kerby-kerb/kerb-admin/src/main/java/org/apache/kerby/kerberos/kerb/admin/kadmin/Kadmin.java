@@ -24,6 +24,7 @@ import org.apache.kerby.kerberos.kerb.KrbException;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Server side admin facilities from remote, similar to MIT kadmin remote mode.
@@ -181,6 +182,7 @@ public interface Kadmin {
      */
     List<String> getPrincipals(String globString) throws KrbException;
 
+    List<Map<String, Object>> getPrincipalLists() throws KrbException;
     /**
      * Change the password of specified principal.
      *

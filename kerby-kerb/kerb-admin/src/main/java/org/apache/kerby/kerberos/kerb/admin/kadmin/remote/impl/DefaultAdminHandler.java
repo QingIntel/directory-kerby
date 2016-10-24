@@ -27,6 +27,7 @@ import org.apache.kerby.kerberos.kerb.transport.KrbTransport;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 public class DefaultAdminHandler extends AdminHandler {
 
@@ -75,5 +76,24 @@ public class DefaultAdminHandler extends AdminHandler {
         }
 
         return prinicalList;
+    }
+
+    public List<Map<String, Object>> handleRequestPrincs(AdminRequest adminRequest) throws KrbException {
+        System.out.println("DefaultAdminHandler");
+        /**send message*/
+        super.handleRequest(adminRequest);
+        System.out.println("send message");
+        KrbTransport transport = adminRequest.getTransport();
+        ByteBuffer receiveMessage = null;
+        List<Map<String, Object>> principals = null;
+        try {
+            receiveMessage = transport.receiveMessage();
+            System.out.println("get message");
+            principals = super.onResponseMessagePrincipals(adminRequest, receiveMessage);
+        } catch (IOException e) {
+            throw new KrbException("Admin receives response message failed", e);
+        }
+
+        return principals;
     }
 }

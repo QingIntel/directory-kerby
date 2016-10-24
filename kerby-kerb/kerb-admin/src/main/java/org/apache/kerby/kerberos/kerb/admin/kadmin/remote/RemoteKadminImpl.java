@@ -24,21 +24,18 @@ import org.apache.kerby.kerberos.kerb.KrbException;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.Kadmin;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.DefaultAdminHandler;
 import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.impl.InternalAdminClient;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.AddPrincipalRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.AdminRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.DeletePrincipalRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.GetprincsRequest;
-import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.RenamePrincipalRequest;
 import org.apache.kerby.kerberos.kerb.common.KrbUtil;
 import org.apache.kerby.kerberos.kerb.transport.KrbNetwork;
 import org.apache.kerby.kerberos.kerb.transport.KrbTransport;
 import org.apache.kerby.kerberos.kerb.transport.TransportPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.kerby.kerberos.kerb.admin.kadmin.remote.request.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Server side admin facilities from remote, similar to MIT Kadmin remote mode.
@@ -189,6 +186,15 @@ public class RemoteKadminImpl implements Kadmin {
         grtPrincsRequest.setTransport(transport);
         AdminHandler adminHandler = new DefaultAdminHandler();
         return adminHandler.handleRequestForList(grtPrincsRequest);
+    }
+
+    @Override
+    public List<Map<String, Object>> getPrincipalLists() throws KrbException {
+        System.out.println("RemoteKadminImpl");
+        AdminRequest uiPrincsRequest = new GetprincipalListRequest();
+        uiPrincsRequest.setTransport(transport);
+        DefaultAdminHandler adminHandler = new DefaultAdminHandler();
+        return adminHandler.handleRequestPrincs(uiPrincsRequest);
     }
 
     @Override

@@ -4,12 +4,44 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         version="2.5">
+    <!--get all principal -->
     <servlet>
         <servlet-name>Hello</servlet-name>
-        <servlet-class>org.apache.kerby.kerberos.kerb.admin.server.kadmin.webserver.HelloServlet</servlet-class>
+        <servlet-class>org.apache.kerby.kerberos.kerb.admin.webserver.HelloServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Hello</servlet-name>
-        <url-pattern>/hello/*</url-pattern>
+        <url-pattern>Hello.do</url-pattern>
     </servlet-mapping>
+
+    <!--add principal -->
+    <servlet>
+        <servlet-name>AddPrincipal</servlet-name>
+        <servlet-class>org.apache.kerby.kerberos.kerb.admin.webserver.AddPrincipalServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddPrincipal</servlet-name>
+        <url-pattern>Add.do</url-pattern>
+    </servlet-mapping>
+
+    <!--rename principal -->
+    <servlet>
+        <servlet-name>RenamePrincipal</servlet-name>
+        <servlet-class>org.apache.kerby.kerberos.kerb.admin.webserver.RenamePrincipalServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RenamePrincipal</servlet-name>
+        <url-pattern>Rename.do</url-pattern>
+    </servlet-mapping>
+
+    <!--delete principal -->
+    <servlet>
+        <servlet-name>DeletePrincipal</servlet-name>
+        <servlet-class>org.apache.kerby.kerberos.kerb.admin.webserver.DeletePrincipalServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeletePrincipal</servlet-name>
+        <url-pattern>Delete.do</url-pattern>
+    </servlet-mapping>
+
 </web-app>

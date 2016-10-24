@@ -1,0 +1,50 @@
+<!-- list -->
+<ul class="nav">
+  <li ng-class="{active:$state.includes('app.menu')}">
+    <a href class="auto">
+      <span class="pull-right text-muted">
+        <i class="fa fa-fw fa-angle-right text"></i>
+        <i class="fa fa-fw fa-angle-down text-active"></i>
+      </span>
+      <i class="glyphicon glyphicon-list"></i>
+      <span>Menu</span>
+    </a>
+    <ul class="nav nav-sub dk">
+      <li class="nav-sub-header">
+        <a href>
+          <span>Menu</span>
+        </a>
+      </li>
+      <li ui-sref-active="active">
+        <a ui-sref="app.menu.kadmin">
+          <span>Kadmin_Server</span>
+        </a>
+      </li>
+    </ul>
+  </li>
+<!--
+  <li ng-class="{active:$state.includes('app.form')}">
+    <a href class="auto">
+      <span class="pull-right text-muted">
+        <i class="fa fa-fw fa-angle-right text"></i>
+        <i class="fa fa-fw fa-angle-down text-active"></i>
+      </span>
+      <i class="glyphicon glyphicon-edit"></i>
+      <span translate="aside.nav.components.form.FORM">A</span>
+    </a>
+    <ul class="nav nav-sub dk">
+      <li class="nav-sub-header">
+        <a href>
+          <span translate="aside.nav.components.form.FORM">A</span>
+        </a>
+      </li>
+      <li ui-sref-active="active">
+        <a ui-sref="app.form.validation">
+          <span translate="aside.nav.components.form.FORM_VALIDATION">Form validation</span>
+        </a>
+      </li>
+    </ul>
+  </li>
+-->
+</ul>
+<!-- / list -->

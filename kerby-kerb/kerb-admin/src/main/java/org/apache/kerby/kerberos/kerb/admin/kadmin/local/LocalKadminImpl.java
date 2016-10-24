@@ -43,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Map;
 
 /**
  * The implementation of admin side admin facilities for local mode.
@@ -177,6 +178,12 @@ public class LocalKadminImpl implements LocalKadmin {
         principal = fixPrincipal(principal);
         addPrincipal(principal, new KOptions());
     }
+
+    @Override
+    public List<Map<String, Object>> getPrincipalLists() throws KrbException {
+        return null;
+    }
+
 
     @Override
     public void addPrincipal(String principal, KOptions kOptions)

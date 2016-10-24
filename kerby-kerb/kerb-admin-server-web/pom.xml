@@ -39,12 +39,17 @@
         <version>${jettyVersion}</version>
         <configuration>
           <scanIntervalSeconds>10</scanIntervalSeconds>
+          <webAppConfig>
+            <extraClasspath>target/classes;../kerb-admin/target/classes</extraClasspath>
+          </webAppConfig>
+          <!--
           <connectors>
             <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
               <port>8080</port>
               <maxIdleTime>60000</maxIdleTime>
             </connector>
           </connectors>
+          -->
         </configuration>
       </plugin>
       <!-- This plugin is needed for the HelloWorld -->
@@ -113,6 +118,11 @@
       <artifactId>jetty-server</artifactId>
       <version>${jettyVersion}</version>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>${jettyVersion}</version>
+    </dependency>
     <!-- Jetty webapp -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -124,6 +134,26 @@
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-jmx</artifactId>
       <version>${jettyVersion}</version>
+    </dependency>
+
+    <!-- Json -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20160212</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/net.sf.json-lib/json-lib-->
+    <dependency>
+      <groupId>net.sf.json-lib</groupId>
+      <artifactId>json-lib</artifactId>
+      <version>2.4</version>
+      <classifier>jdk15</classifier>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.7</version>
     </dependency>
   </dependencies>
 </project>

@@ -19,33 +19,33 @@
  */
 package org.apache.kerby.kerberos.kerb.admin.server.kadmin.impl;
 
-import org.apache.kerby.kerberos.kerb.admin.AuthUtil;
+//import org.apache.kerby.kerberos.kerb.admin.AuthUtil;
 import org.apache.kerby.kerberos.kerb.admin.server.kadmin.AdminServerContext;
 import org.apache.kerby.kerberos.kerb.admin.server.kadmin.AdminServerHandler;
 import org.apache.kerby.kerberos.kerb.transport.KrbTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.AuthorizeCallback;
-import javax.security.sasl.Sasl;
-import javax.security.sasl.SaslServer;
-import java.io.File;
+//import javax.security.auth.Subject;
+//import javax.security.auth.callback.Callback;
+//import javax.security.auth.callback.CallbackHandler;
+//import javax.security.auth.callback.UnsupportedCallbackException;
+//import javax.security.sasl.AuthorizeCallback;
+//import javax.security.sasl.Sasl;
+//import javax.security.sasl.SaslServer;
+//import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketTimeoutException;
+//import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
-import java.security.PrivilegedAction;
-import java.util.HashMap;
-import java.util.Map;
+//import java.security.PrivilegedAction;
+//import java.util.HashMap;
+//import java.util.Map;
 
 public class DefaultAdminServerHandler extends AdminServerHandler implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(DefaultAdminServerHandler.class);
     private final KrbTransport transport;
-    private static boolean sasl = false;
+    //private static boolean sasl = false;
     private AdminServerContext adminServerContext;
 
     public DefaultAdminServerHandler(AdminServerContext adminServerContext, KrbTransport transport) {
@@ -58,7 +58,9 @@ public class DefaultAdminServerHandler extends AdminServerHandler implements Run
     public void run() {
         while (true) {
             try {
+                  /*
                 if (!sasl) {
+                    System.out.println("server get data1");
                     logger.info("Doing the sasl negotiation !!!");
                     try {
                         saslNegotiation();
@@ -66,6 +68,7 @@ public class DefaultAdminServerHandler extends AdminServerHandler implements Run
                         logger.error("With exception when sasl negotiation." + e);
                     }
                 } else {
+                    System.out.println("server get data");
                     ByteBuffer message = transport.receiveMessage();
                     if (message == null) {
                         logger.debug("No valid request recved. Disconnect actively");
@@ -74,6 +77,15 @@ public class DefaultAdminServerHandler extends AdminServerHandler implements Run
                     }
                     handleMessage(message);
                 }
+                */
+                System.out.println("server get data" + adminServerContext);
+                ByteBuffer message = transport.receiveMessage();
+                if (message == null) {
+                    logger.debug("No valid request recved. Disconnect actively");
+                    transport.release();
+                    break;
+                }
+                handleMessage(message);
             } catch (IOException e) {
                 transport.release();
                 logger.debug("Transport or decoding error occurred, "
@@ -95,6 +107,7 @@ public class DefaultAdminServerHandler extends AdminServerHandler implements Run
         }
     }
 
+    /*
     private void saslNegotiation() throws Exception {
 
         File keytabFile = new File(adminServerContext.getConfig().getKeyTabFile());
@@ -195,4 +208,5 @@ public class DefaultAdminServerHandler extends AdminServerHandler implements Run
             }
         }
     }
+    */
 }
