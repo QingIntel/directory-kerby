@@ -5,7 +5,7 @@
  */
 angular.module('app')
   .run(
-    [          '$rootScope', '$state', '$stateParams',
+    ['$rootScope', '$state', '$stateParams',
       function ($rootScope,   $state,   $stateParams) {
           $rootScope.$state = $state;
           $rootScope.$stateParams = $stateParams;        
@@ -13,9 +13,8 @@ angular.module('app')
     ]
   )
   .config(
-    [          '$stateProvider', '$urlRouterProvider',
+    ['$stateProvider', '$urlRouterProvider',
       function ($stateProvider,   $urlRouterProvider) {
-          
           $urlRouterProvider
               .otherwise('/app/dashboard-v1');
           $stateProvider

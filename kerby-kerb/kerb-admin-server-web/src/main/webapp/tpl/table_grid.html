@@ -55,7 +55,7 @@
     <div class="renameDiv">
       <label>Enter old principal</label>
       <div class="inputDiv">
-        <input style="margin-left:51px;" id="oldPrincipalName" name="oldPrincipalName" ng-model="oldPrincipalName" value="{{oldPrincipalName}}">
+        <input readOnly="true" style="margin-left:51px;" id="oldPrincipalName" name="oldPrincipalName" ng-model="oldPrincipalName" value="{{oldPrincipalName}}">
       </div>
     </div>
     <div class="renameDiv">
@@ -86,6 +86,19 @@
     <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="closeThisDialog('button')">Cancel</button>
   </div>
 
+</script>
+
+<!-- prompt -->
+<script type="text/ng-template" id="promptDialogId">
+  <div class="ngdialog-message">
+    <div class="title">
+      <span>Prompt</span>
+    </div>
+    <div class="title"><span>{{message}}</span></div>
+  </div>
+  <div class="ngdialog-buttons">
+    <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="closeThisDialog('button')">OK</button>
+  </div>
 </script>
 <!-- End Templates -->
 

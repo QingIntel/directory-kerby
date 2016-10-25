@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public abstract class AdminHandler {
 
@@ -173,17 +173,23 @@ public abstract class AdminHandler {
 
     private Map<String, Object> getMapForStr(String str) {
         String[] temp = str.trim().split("&");
-        String createTime, expireTime, kdcFlags, principalName;
-        Map<String, Object> map = new HashMap<>();
-        if (temp.length == 4) {
+        String createTime, expireTime, kdcFlags, principalName, locked, disabled;
+        Map<String, Object> map = new LinkedHashMap<>();
+        if (temp.length == 6) {
             createTime = temp[0];
             expireTime = temp[1];
             kdcFlags = temp[2];
             principalName = temp[3];
+            locked = temp[4];
+            disabled = temp[5];
+
+            map.put("principalName", principalName);
+            map.put("kdcFlags", kdcFlags);
+            map.put("locked", locked);
+            map.put("disabled", disabled);
             map.put("createTime", createTime);
             map.put("expireTime", expireTime);
-            map.put("kdcFlags", kdcFlags);
-            map.put("principalName", principalName);
+
             return map;
         } else {
             return null;

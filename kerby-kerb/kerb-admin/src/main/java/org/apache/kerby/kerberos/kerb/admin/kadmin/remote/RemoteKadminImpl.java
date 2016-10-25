@@ -190,7 +190,6 @@ public class RemoteKadminImpl implements Kadmin {
 
     @Override
     public List<Map<String, Object>> getPrincipalLists() throws KrbException {
-        System.out.println("RemoteKadminImpl");
         AdminRequest uiPrincsRequest = new GetprincipalListRequest();
         uiPrincsRequest.setTransport(transport);
         DefaultAdminHandler adminHandler = new DefaultAdminHandler();

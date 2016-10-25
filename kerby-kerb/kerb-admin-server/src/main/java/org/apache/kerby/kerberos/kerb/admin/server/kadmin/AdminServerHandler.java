@@ -129,7 +129,6 @@ public class AdminServerHandler {
         adminMessage.setMessageBuffer(ByteBuffer.wrap(value.encode()));
         ByteBuffer responseMessage = KadminCode.encodeMessage(adminMessage);
         return responseMessage;
-        //ByteBuffer responseMessage = infoPackageTool(krbIdentity.toString(), "getPrincipal");
     }
 
     private String getKrbIdentityStr(List<KrbIdentity> list) {
@@ -146,6 +145,9 @@ public class AdminServerHandler {
             str.append(expireTime.substring(38, expireTime.length() - 1) + segment);
             str.append(krb.getKdcFlags() + segment);
             str.append(krb.getPrincipalName() + segment);
+            str.append(krb.getLocked() + segment);
+            str.append(krb.getDisabled() + segment);
+
             if (i != list.size() - 1) {
                 str.append("/t");
             }

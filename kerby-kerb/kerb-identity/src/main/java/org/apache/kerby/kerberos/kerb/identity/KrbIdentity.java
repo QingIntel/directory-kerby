@@ -50,6 +50,7 @@ public class KrbIdentity {
     /** flag to indicate if this identity was locked */
     private boolean locked;
 
+
     /** the expiration time of the identity, default set to never expire */
     private KerberosTime expireTime = KerberosTime.NEVER;
 
@@ -94,6 +95,14 @@ public class KrbIdentity {
 
     public void setCreatedTime(KerberosTime createdTime) {
         this.createdTime = createdTime;
+    }
+
+    public boolean getLocked() {
+        return this.locked;
+    }
+
+    public boolean getDisabled() {
+        return this.disabled;
     }
 
     public boolean isDisabled() {

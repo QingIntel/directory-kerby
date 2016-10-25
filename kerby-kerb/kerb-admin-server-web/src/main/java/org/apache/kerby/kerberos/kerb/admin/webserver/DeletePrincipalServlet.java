@@ -11,7 +11,6 @@ public class DeletePrincipalServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String principalName = request.getParameter("principalName");
-        System.out.println(principalName + "--------------------");
 
         RemoteUIClientTool.deletePrincipal(principalName);
     }

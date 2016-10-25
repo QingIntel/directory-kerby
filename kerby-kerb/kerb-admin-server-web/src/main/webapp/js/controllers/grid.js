@@ -22,14 +22,6 @@ app.controller('GridCtrl', ['$scope', '$http', function($scope, $http, instance)
             var data;
             if (searchText) {
                 var ft = searchText.toLowerCase();
-                /*
-                $http.get('js/controllers/largeLoad.json').success(function (largeLoad) {    
-                    data = largeLoad.filter(function(item) {
-                        return JSON.stringify(item).toLowerCase().indexOf(ft) != -1;
-                    });
-                    $scope.setPagingData(data,page,pageSize);
-                });
-                            */
                 $http.get('Hello.do').success(function (largeLoad) {
                     data = largeLoad.filter(function(item) {
                         return JSON.stringify(item).toLowerCase().indexOf(ft) != -1;
@@ -71,18 +63,14 @@ app.controller('GridCtrl', ['$scope', '$http', function($scope, $http, instance)
     };
 
     $scope.gridOptions = {
-            data: 'myData',
-            enablePaging: true,
-            showFooter: true,
-            enableRowSelection: true,
-            totalServerItems: 'totalServerItems',
-            pagingOptions: $scope.pagingOptions,
-            filterOptions: $scope.filterOptions,
-            //checkboxCellTemplate: '<div class="ngSelectionCell" ng-class="Header"><input tabindex="-1" class="ngSelectionCheckbox" class="Header" type="checkbox" ng-checked="row.selected" /></div>',
-            //selectWithCheckboxOnly: true,
-            //checkboxHeaderTemplate: '<div class="selectedItems">{{mySelections}}</div>',
-            selectedItems: [],
-            showSelectionCheckbox: true
-            //selectedItems: []
+        data: 'myData',
+        enablePaging: true,
+        showFooter: true,
+        enableRowSelection: true,
+        totalServerItems: 'totalServerItems',
+        pagingOptions: $scope.pagingOptions,
+        filterOptions: $scope.filterOptions,
+        selectedItems: [],
+        showSelectionCheckbox: true
     };
 }]);

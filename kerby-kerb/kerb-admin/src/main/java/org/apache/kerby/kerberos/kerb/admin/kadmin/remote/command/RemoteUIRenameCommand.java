@@ -11,7 +11,6 @@ public class RemoteUIRenameCommand extends RemoteCommand {
 
     @Override
     public void execute(String input) throws KrbException {
-        System.out.println(input);
         String[] items = input.split("&");
         if (items.length != 2) {
             System.out.println("need available input");
