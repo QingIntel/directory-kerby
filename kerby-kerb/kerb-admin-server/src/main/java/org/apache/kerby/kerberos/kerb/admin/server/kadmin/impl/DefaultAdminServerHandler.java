@@ -60,7 +60,6 @@ public class DefaultAdminServerHandler extends AdminServerHandler implements Run
             try {
                   /*
                 if (!sasl) {
-                    System.out.println("server get data1");
                     logger.info("Doing the sasl negotiation !!!");
                     try {
                         saslNegotiation();
